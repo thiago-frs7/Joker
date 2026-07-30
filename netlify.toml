@@ -1,0 +1,24 @@
+# O site publicado é o ALMAS (almas/). O protótipo antigo em app/ não é publicado.
+
+[build]
+  base = "almas"
+  command = "npm run build"
+  publish = "dist"
+
+# O app roteia por hash, então tudo cai no mesmo index.html.
+# A regra existe para que abrir uma URL direta nunca dê 404 dentro do escopo do PWA.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# O service worker não pode ser cacheado, senão uma versão nova nunca chega.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
