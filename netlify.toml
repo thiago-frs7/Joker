@@ -5,6 +5,10 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  # Vite 8 pede Node 20+; fixar evita surpresa quando o padrão da Netlify mudar.
+  NODE_VERSION = "22"
+
 # O app roteia por hash, então tudo cai no mesmo index.html.
 # A regra existe para que abrir uma URL direta nunca dê 404 dentro do escopo do PWA.
 [[redirects]]
