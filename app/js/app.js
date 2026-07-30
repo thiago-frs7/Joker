@@ -489,7 +489,11 @@
 
     if (d.cfg) {
       const s = A.s;
-      if (d.cfg === 'tema') { s.prefs.tema = s.prefs.tema === 'claro' ? 'escuro' : 'claro'; document.documentElement.dataset.tema = s.prefs.tema; }
+      if (d.cfg === 'tema') {
+        s.prefs.tema = s.prefs.tema === 'claro' ? 'escuro' : 'claro';
+        s.prefs.temaEscolhido = true;
+        document.documentElement.dataset.tema = s.prefs.tema;
+      }
       if (d.cfg === 'som') s.prefs.som = !s.prefs.som;
       if (d.cfg === 'haptic') s.prefs.haptic = !s.prefs.haptic;
       if (d.cfg === 'silhueta') { A.calcularSilhueta(true); UI.torrada(s.silhueta ? 'silhueta: ' + s.silhueta.nome : 'ainda em Bruma.'); }
@@ -554,7 +558,15 @@
   A.carregar();
   semear();
   $$('[data-ico]').forEach((e) => { e.innerHTML = UI.ICO[e.dataset.ico] || ''; });
+  /* o hospedeiro pode ter estampado data-theme; adote-o até o usuário escolher */
+  const hosp = document.documentElement.getAttribute('data-theme');
+  if (hosp && !A.s.prefs.temaEscolhido) A.s.prefs.tema = hosp === 'light' ? 'claro' : 'escuro';
   document.documentElement.dataset.tema = A.s.prefs.tema || 'escuro';
+  new MutationObserver(() => {
+    if (A.s.prefs.temaEscolhido) return;
+    const h = document.documentElement.getAttribute('data-theme');
+    if (h) document.documentElement.dataset.tema = A.s.prefs.tema = (h === 'light' ? 'claro' : 'escuro');
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.documentElement.style.setProperty('--estacao', A.estacao().acento);
   if (A.s.prefs.acento && A.s.prefs.acentoAte > Date.now()) {   /* sopro de cor do Pirilampo */
     document.documentElement.style.setProperty('--acento', `hsl(${A.s.prefs.acento} 62% 56%)`);

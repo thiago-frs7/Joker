@@ -20,10 +20,17 @@
   --safe: env(safe-area-inset-bottom, 0px);
 }
 
-[data-tema='claro'] {
+/* papel de carta desenhado à mão, não uma inversão automática.
+   `data-theme` é o toggle do hospedeiro; `data-tema` é a escolha dentro do app. */
+[data-tema='claro'], :root[data-theme='light'] {
   --fundo: #F4EDE0; --superficie: #EAE0CE; --superficie2: #E2D6C0;
   --traco: #C9B99B; --texto: #241D14; --texto2: #5E5241; --texto3: #8A7C67;
   --ambar: #A9611A;
+}
+:root[data-theme='light'][data-tema='escuro'] {   /* a escolha do app vence */
+  --fundo: #100D0A; --superficie: #1B1611; --superficie2: #231C15;
+  --traco: #3A2F23; --texto: #EFE6D6; --texto2: #A0937F; --texto3: #6B6053;
+  --ambar: #C97B21;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
