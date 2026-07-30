@@ -168,8 +168,10 @@ function Brasa({ valor, titulo }: { valor: number; titulo: string }) {
 }
 
 function NumeroVoando({ ganho }: { ganho: Voando }) {
-  const x = ganho.origem?.x ?? window.innerWidth / 2
-  const y = ganho.origem?.y ?? 90
+  // Preso dentro da tela: o número nasce onde o dedo tocou, mas nunca metade
+  // fora da borda.
+  const x = Math.min(Math.max(ganho.origem?.x ?? window.innerWidth / 2, 62), window.innerWidth - 62)
+  const y = Math.max(ganho.origem?.y ?? 96, 96)
   const faiscas = Array.from({ length: 5 }, (_, i) => i)
   return (
     <div className="absolute" style={{ left: x, top: y }}>

@@ -76,7 +76,6 @@
 @layer base {
   :root {
     color-scheme: dark;
-    --densidade: 1;
     --brilho-brasa: 1;
   }
 
@@ -295,12 +294,34 @@
  */
 
 [data-calmo='sim'] {
-  --densidade: 0.86;
-  --brilho-brasa: 0.72;
+  --brilho-brasa: 0.35;
+
+  /* A brasa esfria: o acento continua sendo o acento, mas para de queimar a
+     retina. Como as utilidades do Tailwind leem estas variáveis, a troca vale
+     para o app inteiro de uma vez. */
+  --color-brasa: #c08f4e;
+  --color-brasa-clara: #d9bb8e;
+  --color-brasa-funda: #8d5c2c;
+
+  --color-texto: #ddd5cb;
+  --color-fraco: #a1968b;
+
+  /* Superfícies mais próximas entre si: menos degrau, menos ruído. */
+  --color-pedra: #151312;
+  --color-pedra-alta: #1e1a19;
+  --color-pedra-viva: #262120;
+
+  /* Menos denso: mais ar entre as linhas. */
+  line-height: 1.6;
 }
 
 [data-calmo='sim'] body::before {
-  opacity: 0.35;
+  opacity: 0.22;
+}
+
+/* Nada de halo em botão. */
+[data-calmo='sim'] .botao-captura {
+  box-shadow: none;
 }
 
 [data-calmo='sim'] .anima-lamber::after,

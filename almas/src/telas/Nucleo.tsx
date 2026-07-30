@@ -50,9 +50,13 @@ export function Nucleo({ irPara }: { irPara: (aba: string) => void }) {
     return candidatas[0]
   }, [abertas, perfil.focoId])
 
+  // Em modo calmo a tela fica ainda mais vazia: um "depois disso" em vez de dois.
   const proximos = useMemo(
-    () => abertas.filter((m) => m.id !== perfil.focoId && m.id !== retomar?.id).slice(0, 2),
-    [abertas, perfil.focoId, retomar?.id],
+    () =>
+      abertas
+        .filter((m) => m.id !== perfil.focoId && m.id !== retomar?.id)
+        .slice(0, config.modoCalmo ? 1 : 2),
+    [abertas, perfil.focoId, retomar?.id, config.modoCalmo],
   )
 
   async function sortear() {

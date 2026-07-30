@@ -1,3 +1,11 @@
+> **Dois apps moram neste repositório.**
+> [`almas/`](almas/README.md) é a versão atual — React + Vite + TypeScript + Dexie, PWA offline,
+> reescrita do zero a partir de uma especificação nova (vocabulário de Almas/camadas, Núcleo,
+> Grimório, Ascensão e Troféus). [`app/`](app/README.md) é o ÂMBAR, o protótipo anterior sem build
+> nem dependências, documentado abaixo e mantido intacto para consulta.
+
+---
+
 # ÂMBAR — o códice das coisas vivas
 
 > Um RPG da vida real para cérebros que buscam dopamina.
