@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#100D0A">
+<title>ÂMBAR</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23100D0A'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23E8A33D'/%3E%3C/svg%3E">
+<style>
+/* ÂMBAR · Herbário Vitoriano em Luz Baixa
+   uma cor saturada por tela · nada pisca · todo movimento é viscoso */
+
+:root {
+  --fundo:      #100D0A;
+  --superficie: #1B1611;
+  --superficie2:#231C15;
+  --traco:      #3A2F23;
+  --seiva:      #E8A33D;
+  --ambar:      #C97B21;
+  --prisma:     #7FD4C1;
+  --texto:      #EFE6D6;
+  --texto2:     #A0937F;
+  --texto3:     #6B6053;
+  --acento:     #E8A33D;          /* trocado pela Estação / Pirilampo */
+  --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --sans: 'Segoe UI', Roboto, -apple-system, 'Helvetica Neue', sans-serif;
+  --visc: cubic-bezier(.22, .61, .36, 1);
+  --r: 14px;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+
+[data-tema='claro'] {
+  --fundo: #F4EDE0; --superficie: #EAE0CE; --superficie2: #E2D6C0;
+  --traco: #C9B99B; --texto: #241D14; --texto2: #5E5241; --texto3: #8A7C67;
+  --ambar: #A9611A;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--fundo); color: var(--texto);
+  font-family: var(--sans); font-size: 16px; line-height: 1.45;
+  overscroll-behavior-y: none;
+}
+body::before { /* grão de papel a 4% */
+  content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  opacity: .045; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body::after { /* vinheta */
+  content: ''; position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 35%, transparent 40%, rgba(0,0,0,.45) 100%);
+}
+[data-tema='claro'] body::after { background: radial-gradient(ellipse at 50% 35%, transparent 45%, rgba(90,70,40,.18) 100%); }
+
+button, input, select { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+h1, h2, h3, .serif, .num { font-family: var(--serif); font-weight: 400; }
+
+/* ─── estrutura ─────────────────────────────────────────────────────────── */
+#app { min-height: 100%; display: flex; flex-direction: column; }
+
+.topo {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px 10px;
+  background: linear-gradient(var(--fundo) 70%, transparent);
+}
+.topo .camada { font-family: var(--serif); font-size: 15px; color: var(--texto2); white-space: nowrap; }
+.topo .camada b { color: var(--texto); font-size: 17px; }
+.barra-camada { flex: 1; height: 4px; background: var(--traco); border-radius: 4px; overflow: hidden; }
+.barra-camada > i { display: block; height: 100%; background: var(--acento); transition: width .8s var(--visc); }
+.topo .saldo { font-family: var(--serif); font-size: 15px; color: var(--seiva); white-space: nowrap; }
+
+main { flex: 1; padding: 0 18px calc(96px + var(--safe)); }
+.tela { display: none; animation: entra .35s var(--visc); }
+.tela.on { display: block; }
+@keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.secao { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--texto3); margin: 26px 0 12px; }
+
+/* ─── navegação ─────────────────────────────────────────────────────────── */
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  display: flex; padding: 8px 6px calc(8px + var(--safe));
+  background: rgba(16,13,10,.94); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--traco);
+}
+[data-tema='claro'] nav { background: rgba(244,237,224,.94); }
+nav button {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 2px; color: var(--texto3); font-size: 10.5px; letter-spacing: .04em;
+  border-radius: 10px; transition: color .25s var(--visc);
+}
+nav button .g { display: flex; align-items: center; justify-content: center; height: 22px; opacity: .55; transition: opacity .25s; }
+nav button[aria-current='true'] { color: var(--texto); }
+nav button[aria-current='true'] .g { opacity: 1; color: var(--acento); }
+nav button { position: relative; }
+nav button[aria-current='true']::after {
+  content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 26px; height: 2px; background: var(--acento); border-radius: 2px;
+}
+
+.ug { width: .58em; height: .78em; vertical-align: -.04em; margin-left: .22em; }
+nav .g svg, .busca .voz svg { width: 21px; height: 21px; display: block; }
+.busca .voz { display: flex; align-items: center; justify-content: center; color: var(--texto2); }
+.busca .voz.ouvindo { color: var(--seiva); }
+.vendaval .g svg { width: 18px; height: 18px; color: var(--texto2); }
+.vendaval .g { display: flex; }
+
+/* ─── cartões ───────────────────────────────────────────────────────────── */
+.cartao {
+  background: var(--superficie); border: 1px solid var(--traco);
+  border-radius: var(--r); padding: 16px;
+}
+.cartao.fundo2 { background: var(--superficie2); }
+
+/* AGORA · o cartão único da tela Hoje */
+.agora {
+  position: relative; overflow: hidden;
+  background: linear-gradient(160deg, var(--superficie2), var(--superficie));
+  border: 1px solid var(--traco); border-radius: 20px;
+  padding: 28px 20px 20px; text-align: center;
+}
+.agora .et { font-size: 10.5px; letter-spacing: .28em; color: var(--texto3); }
+.agora .tt { font-family: var(--serif); font-size: 25px; line-height: 1.25; margin: 12px 0 6px; }
+.agora .mn { color: var(--texto2); font-size: 13.5px; }
+.agora .halo {
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--acento) 22%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.feito {
+  display: block; width: 100%; max-width: 300px; margin: 20px auto 10px;
+  min-height: 72px; border-radius: 16px;
+  background: linear-gradient(180deg, var(--seiva), var(--ambar));
+  color: #2A1A06; font-family: var(--serif); font-size: 21px; letter-spacing: .06em;
+  box-shadow: 0 6px 22px rgba(232,163,61,.22);
+  transition: transform .18s var(--visc), box-shadow .25s;
+}
+.feito:active { transform: scale(.965); box-shadow: 0 2px 10px rgba(232,163,61,.3); }
+.escapes { display: flex; justify-content: center; gap: 24px; }
+.escapes button { color: var(--texto3); font-size: 13px; padding: 8px 6px; }
+.escapes button:active { color: var(--texto2); }
+
+/* corrente */
+.corrente { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 20px 0 6px; }
+.elo { width: 9px; height: 9px; border-radius: 50%; background: var(--traco); }
+.elo.on { background: var(--acento); box-shadow: 0 0 8px color-mix(in srgb, var(--acento) 60%, transparent); }
+.corrente .lbl { font-size: 12px; color: var(--texto3); margin-left: 6px; }
+.turvo .elo.on { background: var(--texto3); box-shadow: none; }
+
+/* pedras de Ciclo */
+.pedras { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+.pedra {
+  aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: var(--superficie); border: 1px solid var(--traco); border-radius: 18px;
+  font-size: 11px; color: var(--texto2); text-align: center; padding: 6px;
+  transition: transform .2s var(--visc), background .4s var(--visc), border-color .3s;
+}
+.pedra .g { font-size: 24px; color: var(--texto2); font-family: var(--serif); }
+.pedra:active { transform: scale(.94); }
+.pedra.feita {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--seiva) 26%, var(--superficie)), var(--superficie));
+  border-color: var(--ambar); color: var(--texto);
+}
+.pedra.feita .g { color: var(--seiva); }
+
+.criar { display: flex; gap: 8px; margin-top: 10px; }
+.criar button {
+  flex: 1; padding: 11px 8px; border-radius: 11px; font-size: 12.5px;
+  border: 1px dashed var(--traco); color: var(--texto3);
+}
+.criar button:active { border-style: solid; color: var(--texto2); transform: scale(.98); }
+
+/* barra grossa */
+.prog { height: 8px; background: var(--traco); border-radius: 8px; overflow: hidden; }
+.prog > i { display: block; height: 100%; background: var(--acento); border-radius: 8px; transition: width .6s var(--visc); }
+.prog.fina { height: 5px; }
+
+/* linha do Vendaval */
+.vendaval { display: flex; align-items: center; gap: 10px; }
+.vendaval .g { font-size: 18px; }
+.vendaval .prog { flex: 1; }
+.vendaval .pc { font-family: var(--serif); font-size: 14px; color: var(--texto2); min-width: 34px; text-align: right; }
+
+/* selar */
+.selar {
+  display: block; margin: 26px auto 8px; padding: 15px 34px;
+  border: 1px solid var(--ambar); border-radius: 999px;
+  font-family: var(--serif); font-size: 16px; letter-spacing: .12em; color: var(--seiva);
+  background: color-mix(in srgb, var(--seiva) 8%, transparent);
+  transition: transform .18s var(--visc);
+}
+.selar:active { transform: scale(.96); }
+
+/* ─── chips ─────────────────────────────────────────────────────────────── */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 6px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; padding: 9px 15px; border-radius: 999px;
+  border: 1px solid var(--traco); background: var(--superficie);
+  font-size: 13px; color: var(--texto2); white-space: nowrap;
+  transition: all .2s var(--visc);
+}
+.chip[aria-pressed='true'] { border-color: var(--ambar); color: var(--texto); background: color-mix(in srgb, var(--seiva) 12%, var(--superficie)); }
+.chip:active { transform: scale(.95); }
+
+/* ─── árvore ────────────────────────────────────────────────────────────── */
+.silhueta { text-align: center; padding: 18px 0 6px; }
+.silhueta h2 { font-size: 26px; margin: 0; letter-spacing: .02em; }
+.silhueta .sub { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--texto3); margin-top: 6px; }
+.silhueta .bon { font-size: 13px; color: var(--seiva); margin-top: 8px; }
+#arvore-canvas { width: 100%; height: 200px; display: block; touch-action: none; }
+
+.nos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.no {
+  text-align: left; padding: 13px 14px; border-radius: 12px;
+  background: var(--superficie); border: 1px solid var(--traco);
+  transition: transform .18s var(--visc), border-color .25s;
+}
+.no:active { transform: scale(.97); }
+.no.bloq { opacity: .45; }
+.no .nn { font-family: var(--serif); font-size: 15.5px; }
+.no .nd { font-size: 11.5px; color: var(--texto3); margin-top: 3px; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.no .nc { font-size: 12.5px; color: var(--seiva); margin-top: 7px; }
+.ramo-linha { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--traco); }
+.ramo-linha .g { font-size: 17px; width: 22px; text-align: center; color: var(--texto2); }
+.ramo-linha .nm { flex: 1; font-family: var(--serif); font-size: 16px; }
+.ramo-linha .qt { font-size: 12px; color: var(--texto3); }
+
+/* ─── herbário ──────────────────────────────────────────────────────────── */
+.busca { display: flex; gap: 8px; align-items: center; margin: 6px 0 14px; }
+.busca input {
+  flex: 1; padding: 15px 16px; border-radius: 14px;
+  background: var(--superficie); border: 1px solid var(--traco); color: var(--texto);
+  font-size: 16px; outline: none; transition: border-color .25s;
+}
+.busca input:focus { border-color: var(--ambar); }
+.busca .voz {
+  width: 52px; height: 52px; border-radius: 14px; font-size: 21px;
+  background: var(--superficie); border: 1px solid var(--traco);
+}
+.busca .voz.ouvindo { border-color: var(--seiva); animation: pulsa 1.4s infinite; }
+@keyframes pulsa { 0%,100% { box-shadow: 0 0 0 0 rgba(232,163,61,.35); } 50% { box-shadow: 0 0 0 9px rgba(232,163,61,0); } }
+
+.resultados { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.res {
+  display: flex; gap: 12px; align-items: center; text-align: left;
+  padding: 10px; border-radius: 12px; background: var(--superficie2); border: 1px solid var(--traco);
+}
+.res:active { transform: scale(.985); }
+.capa { width: 52px; height: 74px; border-radius: 6px; flex: 0 0 auto; overflow: hidden; background: var(--traco); }
+.capa svg { width: 100%; height: 100%; display: block; }
+.capa.g { width: 62px; height: 88px; }
+.res .info { flex: 1; min-width: 0; }
+.res .tt { font-family: var(--serif); font-size: 16px; line-height: 1.2; }
+.res .mt { font-size: 11.5px; color: var(--texto3); margin-top: 3px; }
+.res .fonte { font-size: 10px; letter-spacing: .1em; color: var(--texto3); text-transform: uppercase; }
+
+.folha { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--traco); }
+.folha .info { flex: 1; min-width: 0; }
+.folha .tt { font-family: var(--serif); font-size: 16.5px; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folha .mt { font-size: 12px; color: var(--texto2); margin: 4px 0 6px; }
+.folha .mais {
+  width: 44px; height: 44px; border-radius: 50%; flex: 0 0 auto;
+  border: 1px solid var(--ambar); color: var(--seiva); font-size: 17px;
+  background: color-mix(in srgb, var(--seiva) 8%, transparent);
+}
+.folha .mais:active { transform: scale(.9); }
+
+.enxerto-banner {
+  border: 1px solid var(--ambar); border-radius: var(--r); padding: 14px 16px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--seiva) 15%, var(--superficie)), var(--superficie));
+  margin-bottom: 14px;
+}
+.enxerto-banner .par { font-family: var(--serif); font-size: 15px; line-height: 1.3; }
+.enxerto-banner .nm { color: var(--seiva); font-family: var(--serif); font-size: 19px; margin: 6px 0 2px; }
+.enxerto-banner .tx { font-size: 12.5px; color: var(--texto2); }
+.enxerto-banner button {
+  margin-top: 12px; width: 100%; padding: 12px; border-radius: 11px;
+  background: var(--seiva); color: #2A1A06; font-family: var(--serif); font-size: 15px; letter-spacing: .1em;
+}
+
+/* ─── estufa ────────────────────────────────────────────────────────────── */
+.estufa {
+  position: relative; border-radius: 18px; overflow: hidden;
+  border: 1px solid var(--traco); padding: 16px 12px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--estacao, var(--acento)) 12%, transparent), transparent 62%),
+    linear-gradient(180deg, #14100C, #0C0A08);
+  min-height: 300px;
+}
+.estufa::after {           /* fetos em gravura, no fundo do vidro */
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+  opacity: .16; pointer-events: none;
+  background: no-repeat bottom / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 160'%3E%3Cg fill='none' stroke='%23E8A33D' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M40 160C40 110 20 90 14 70M40 160c0-40 18-62 30-78'/%3E%3Cpath d='M34 130l-14-8M36 116l-13-9M38 102l-11-9M44 128l12-9M46 114l11-9M48 100l9-9'/%3E%3Cpath d='M340 160c0-46 22-70 34-88M340 160c-2-38-18-58-28-72'/%3E%3Cpath d='M346 132l12-10M349 118l11-10M352 104l9-9M334 130l-11-9M332 116l-10-9'/%3E%3Cpath d='M196 160c0-30 8-52 8-72 0 20 8 42 8 72' /%3E%3Cpath d='M120 160c0-24-10-38-16-48M280 160c0-26 10-40 16-50'/%3E%3C/g%3E%3C/svg%3E");
+}
+[data-tema='claro'] .estufa { background: linear-gradient(180deg, #E7DCC6, #D8CAB0); }
+.estufa .vidro {
+  position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image: linear-gradient(105deg, transparent 46%, rgba(255,255,255,.05) 50%, transparent 54%);
+}
+.prateleira { position: relative; z-index: 1; padding: 10px 4px 16px; display: flex; gap: 14px; min-height: 104px; align-items: flex-end; }
+.prateleira::after { content: ''; position: absolute; left: -4px; right: -4px; bottom: 0; height: 3px;
+  border-radius: 2px; background: linear-gradient(90deg, transparent, var(--traco) 8%, var(--traco) 92%, transparent); }
+.vaga { width: 66px; text-align: center; }
+.vaga .lb { font-size: 10px; color: var(--texto3); margin-top: 5px; line-height: 1.2; }
+.vaga.vazia { opacity: .25; }
+
+/* bloco de âmbar 3D */
+.bloco { width: 62px; height: 62px; margin: 0 auto; perspective: 420px; }
+.bloco .cubo { position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
+  animation: gira 22s linear infinite; }
+.bloco .f { position: absolute; inset: 0; border: 1px solid rgba(232,163,61,.35);
+  background: linear-gradient(150deg, rgba(232,163,61,.26), rgba(201,123,33,.14));
+  backdrop-filter: blur(1px); }
+.bloco .f1 { transform: translateZ(31px);
+  background: linear-gradient(150deg, rgba(232,163,61,.13), rgba(201,123,33,.05)); }
+.bloco .f2 { transform: rotateY(180deg) translateZ(31px); }
+.bloco .f3 { transform: rotateY(90deg) translateZ(31px); }
+.bloco .f4 { transform: rotateY(-90deg) translateZ(31px); }
+.bloco .f5 { transform: rotateX(90deg) translateZ(31px); }
+.bloco .f6 { transform: rotateX(-90deg) translateZ(31px); }
+.bloco .bicho { position: absolute; inset: 12px; transform: translateZ(2px); }
+.bloco .bicho svg { width: 100%; height: 100%; filter: drop-shadow(0 0 3px rgba(255,222,160,.4)); }
+@keyframes gira { to { transform: rotateY(360deg) rotateX(14deg); } }
+.bloco.dormente .f { background: linear-gradient(150deg, rgba(170,130,72,.3), rgba(96,74,44,.22)); border-color: rgba(160,128,84,.34); }
+.bloco.dormente .bicho { opacity: .5; filter: blur(.6px); }
+.bloco.plena .f { background: linear-gradient(150deg, rgba(255,190,90,.42), rgba(232,163,61,.24)); }
+.bloco.plena { filter: drop-shadow(0 0 14px rgba(232,163,61,.45)); }
+.bloco.grande { width: 190px; height: 190px; perspective: 900px; }
+.bloco.grande .f1 { transform: translateZ(95px);
+  background: linear-gradient(150deg, rgba(232,163,61,.1), rgba(201,123,33,.04)); }
+.bloco.grande .f2 { transform: rotateY(180deg) translateZ(95px); }
+.bloco.grande .f3 { transform: rotateY(90deg) translateZ(95px); }
+.bloco.grande .f4 { transform: rotateY(-90deg) translateZ(95px); }
+.bloco.grande .f5 { transform: rotateX(90deg) translateZ(95px); }
+.bloco.grande .f6 { transform: rotateX(-90deg) translateZ(95px); }
+.bloco.grande .bicho { inset: 34px; }
+.bloco.manual .cubo { animation: none; }
+
+/* ─── estrato ───────────────────────────────────────────────────────────── */
+.estrato { border-radius: 14px; overflow: hidden; border: 1px solid var(--traco); }
+.camada-linha { display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: linear-gradient(90deg, var(--superficie2), var(--superficie)); border-bottom: 1px solid var(--traco); }
+.camada-linha .faixa { flex: 1; height: 62%; border-radius: 3px; opacity: .8;
+  background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 1px, transparent 1px 7px); }
+.camada-linha .lb { font-family: var(--serif); font-size: 13px; color: var(--texto2); white-space: nowrap; }
+.camada-linha .ic { font-size: 13px; letter-spacing: 2px; }
+
+.fossil { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--traco); }
+.fossil .g { font-size: 20px; width: 26px; text-align: center; }
+.fossil .info { flex: 1; min-width: 0; }
+.fossil .nm { font-family: var(--serif); font-size: 16px; }
+.fossil .dd { font-size: 11.5px; color: var(--texto3); }
+.fossil .r { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.fossil.travado { opacity: .38; }
+.fossil.oculto .nm { letter-spacing: .3em; }
+.r-casca  { color: #9C7C55; } .r-cerne  { color: #C08A45; }
+.r-ambar  { color: var(--seiva); } .r-prisma { color: var(--prisma); }
+
+.epitetos { display: flex; gap: 10px; }
+.slot { flex: 1; padding: 13px 10px; border-radius: 12px; border: 1px dashed var(--traco);
+  text-align: center; font-size: 13px; color: var(--texto3); }
+.slot.on { border-style: solid; border-color: var(--ambar); color: var(--texto); font-family: var(--serif); font-size: 15px; }
+
+/* ─── sobreposições ─────────────────────────────────────────────────────── */
+.folha-modal, .lamina {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end;
+  background: rgba(8,6,4,.72); backdrop-filter: blur(3px);
+  animation: fade .25s var(--visc);
+}
+.lamina > .corpo, .folha-modal > .corpo {
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  background: var(--superficie); border-radius: 22px 22px 0 0;
+  border-top: 1px solid var(--traco); padding: 8px 18px calc(26px + var(--safe));
+  animation: sobe .32s var(--visc);
+}
+.lamina .puxador { width: 44px; height: 4px; border-radius: 4px; background: var(--traco); margin: 8px auto 16px; }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes sobe { from { transform: translateY(24px) } to { transform: none } }
+
+.lamina h3 { font-size: 22px; margin: 0 0 4px; }
+.lamina .sub { color: var(--texto2); font-size: 13px; margin-bottom: 16px; }
+.acoes { display: grid; gap: 9px; margin-top: 6px; }
+.acao { text-align: left; padding: 15px 16px; border-radius: 12px;
+  background: var(--superficie2); border: 1px solid var(--traco); font-size: 15px; }
+.acao:active { transform: scale(.98); }
+.acao b { color: var(--seiva); font-family: var(--serif); }
+.acao.primaria { background: var(--seiva); color: #2A1A06; border-color: var(--seiva); font-family: var(--serif); font-size: 17px; text-align: center; letter-spacing: .06em; }
+
+/* selagem */
+#selagem { position: fixed; inset: 0; z-index: 300; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: #0A0806; text-align: center; }
+#selagem.on { display: flex; }
+.frasco { width: 132px; height: 210px; border: 2px solid var(--traco); border-radius: 14px 14px 26px 26px;
+  position: relative; overflow: hidden; margin-bottom: 26px; }
+.frasco .liq { position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+  background: linear-gradient(180deg, var(--seiva), var(--ambar)); transition: height 1s linear; }
+.frasco .liq::before { content: ''; position: absolute; top: -6px; left: 0; right: 0; height: 12px;
+  background: var(--seiva); border-radius: 50%; opacity: .6; }
+#selagem .t { font-family: var(--serif); font-size: 46px; }
+#selagem .m { color: var(--texto2); font-size: 13.5px; margin-top: 6px; }
+#selagem .mult { color: var(--seiva); font-family: var(--serif); font-size: 19px; margin-top: 14px; }
+#selagem .sair { margin-top: 34px; color: var(--texto3); font-size: 13px; padding: 12px 20px; }
+
+/* celebração */
+#celebra { position: fixed; inset: 0; z-index: 400; display: none;
+  align-items: center; justify-content: center; background: rgba(6,4,3,.93); text-align: center; }
+#celebra.on { display: flex; }
+.gota { width: 108px; height: 108px; margin: 0 auto 20px; position: relative; }
+.gota .d { position: absolute; inset: 0; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 35% 30%, #FFD68A, var(--ambar));
+  animation: cai 1.1s var(--visc); box-shadow: 0 0 40px rgba(232,163,61,.5); }
+@keyframes cai { 0% { transform: translateY(-220px) scale(.4); opacity: 0 } 60% { transform: none; opacity: 1 } 75% { transform: scaleY(.88) scaleX(1.08) } 100% { transform: none } }
+.gota .n { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 40px; color: #3A2405; animation: fade .5s .7s backwards; }
+#celebra h2 { font-size: 24px; margin: 6px 0 } #celebra p { color: var(--texto2); font-size: 14px; max-width: 300px; margin: 0 auto }
+#celebra .dica { color: var(--texto3); font-size: 11.5px; margin-top: 30px; letter-spacing: .1em }
+
+/* números flutuantes */
+.flut { position: fixed; z-index: 500; pointer-events: none; font-family: var(--serif);
+  font-size: 22px; color: var(--seiva); text-shadow: 0 0 12px rgba(232,163,61,.6);
+  animation: flutua 1.1s var(--visc) forwards; }
+@keyframes flutua { 0% { opacity: 0; transform: translateY(6px) scale(.8) } 25% { opacity: 1; transform: translateY(-10px) scale(1.06) } 100% { opacity: 0; transform: translateY(-58px) scale(1) } }
+.faisca { position: fixed; z-index: 499; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--seiva); pointer-events: none; animation: faisca .8s var(--visc) forwards; }
+@keyframes faisca { 0% { opacity: 1; transform: none } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2) } }
+
+/* pirilampo */
+#lampo { position: fixed; z-index: 320; width: 56px; height: 56px; border-radius: 50%; display: none;
+  align-items: center; justify-content: center; font-size: 26px;
+  background: radial-gradient(circle, rgba(232,220,120,.35), transparent 70%);
+  animation: voa 6s ease-in-out infinite; }
+#lampo.on { display: flex; }
+@keyframes voa { 0%,100% { transform: translate(0,0) } 25% { transform: translate(14px,-18px) } 50% { transform: translate(-10px,-8px) } 75% { transform: translate(8px,12px) } }
+
+/* torrada */
+#torrada { position: fixed; left: 50%; bottom: calc(108px + var(--safe)); transform: translateX(-50%);
+  z-index: 600; max-width: 92%; padding: 12px 18px; border-radius: 12px;
+  background: var(--superficie2); border: 1px solid var(--traco); font-size: 13.5px;
+  opacity: 0; pointer-events: none; transition: opacity .3s var(--visc), transform .3s var(--visc); }
+#torrada.on { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+/* silêncio: remove tudo que não é a coisa em si */
+body.silencio nav, body.silencio .topo .saldo, body.silencio .vendaval,
+body.silencio .corrente, body.silencio #lampo { opacity: 0; pointer-events: none; transition: opacity .4s var(--visc); }
+body.silencio main { padding-bottom: 40px; }
+
+/* turvação: cosmético, jamais numérico */
+body.turvo { filter: saturate(.72); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .12s !important; }
+  .bloco .cubo { animation: none !important; transform: rotateY(28deg) rotateX(12deg); }
+}
+@media (min-width: 620px) {
+  main, .topo { max-width: 560px; margin: 0 auto; }
+  nav { max-width: 560px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; border: 1px solid var(--traco); }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topo">
+    <div class="camada">Camada <b id="t-camada">1</b></div>
+    <div class="barra-camada"><i id="t-barra" style="width:0%"></i></div>
+    <div class="saldo" id="t-saldo">0 🩸</div>
+  </header>
+
+  <main>
+    <section class="tela on" id="tela-hoje"></section>
+    <section class="tela" id="tela-arvore"></section>
+    <section class="tela" id="tela-herbario"></section>
+    <section class="tela" id="tela-estufa"></section>
+    <section class="tela" id="tela-estrato"></section>
+  </main>
+
+  <nav id="nav">
+    <button data-t="hoje"     aria-current="true"><span class="g" data-ico="hoje"></span>Hoje</button>
+    <button data-t="arvore"><span class="g" data-ico="arvore"></span>Árvore</button>
+    <button data-t="herbario"><span class="g" data-ico="herbario"></span>Herbário</button>
+    <button data-t="estufa"><span class="g" data-ico="estufa"></span>Estufa</button>
+    <button data-t="estrato"><span class="g" data-ico="estrato"></span>Estrato</button>
+  </nav>
+</div>
+
+<!-- Selagem: foco manual -->
+<div id="selagem">
+  <div class="frasco"><div class="liq" id="sel-liq"></div></div>
+  <div class="t" id="sel-t">25:00</div>
+  <div class="m" id="sel-m">a resina escorre enquanto você fica</div>
+  <div class="mult" id="sel-mult">×1,00</div>
+  <button class="sair" id="sel-sair">encerrar e guardar o que já endureceu</button>
+</div>
+
+<!-- Celebração -->
+<div id="celebra">
+  <div>
+    <div class="gota"><div class="d"></div><div class="n" id="cel-n"></div></div>
+    <h2 id="cel-t"></h2>
+    <p id="cel-p"></p>
+    <div class="dica">toque para continuar</div>
+  </div>
+</div>
+
+<div id="lampo" title="pirilampo">✨</div>
+<div id="torrada"></div>
+<script>
+/* ÂMBAR · base de dados semente
+ * Tudo aqui funciona offline. As APIs (AniList, Open Library) são consultadas
+ * quando há rede e o resultado é fundido neste catálogo; sem rede, este arquivo
+ * é o catálogo. Ver docs/5-apis-e-importacao.md
+ *
+ * k    = tipo   · u = unidade de progresso · total = tamanho da obra
+ * tags = grafo de síntese, usado para detectar Enxertos
+ */
+
+const RAMOS = [
+  { id: 'corpo',   nome: 'Corpo',   glifo: '🜂', cor: '#C9622B' },
+  { id: 'mente',   nome: 'Mente',   glifo: '🜄', cor: '#5C7FA3' },
+  { id: 'oficio',  nome: 'Ofício',  glifo: '🜃', cor: '#8A6D3B' },
+  { id: 'vinculo', nome: 'Vínculo', glifo: '🜁', cor: '#A0553F' },
+  { id: 'cultura', nome: 'Cultura', glifo: '☾',  cor: '#7C6AA8' },
+  { id: 'ordem',   nome: 'Ordem',   glifo: '☉',  cor: '#6E8B5E' },
+];
+
+/* Nós de talento: 3 na profundidade 1, bifurcação exclusiva na 2, depois 4/4/2.
+ * custo(t) = 50 · 1,9^(t-1)  →  50 · 95 · 180 · 343 · 652 */
+const NOS = {
+  corpo: [
+    { t: 1, n: 'Constância',     d: '+5% de Seiva em Ciclos de Corpo' },
+    { t: 1, n: 'Fôlego',         d: '+5% de Seiva em Selagens longas' },
+    { t: 1, n: 'Postura',        d: 'desbloqueia Ciclo diário extra' },
+    { t: 2, n: 'Força',          d: 'bifurcação · caminho da carga', ramifica: true },
+    { t: 2, n: 'Resistência',    d: 'bifurcação · caminho da distância', ramifica: true },
+    { t: 3, n: 'Carga',          d: '+8% de Seiva em Brotos Pesados' },
+    { t: 3, n: 'Explosão',       d: 'Brotos de 2 min rendem como 5 min' },
+    { t: 3, n: 'Base',           d: 'a corrente congela por 4 dias, não 3' },
+    { t: 3, n: 'Distância',      d: '+1 ficha de Bruma por mês' },
+    { t: 4, n: 'Segundo Vento',  d: 'Selagem retomada mantém a pureza' },
+    { t: 4, n: 'Pele de Casca',  d: 'Vendaval derrotado devolve 50 🩸' },
+    { t: 4, n: 'Marcha',         d: '+10% de Seiva antes das 9h' },
+    { t: 4, n: 'Tendão',         d: 'slot de Epíteto' },
+    { t: 5, n: 'Corpo de Âmbar', d: 'Inclusão exclusiva: Escaravelho de Bronze' },
+    { t: 5, n: 'Raiz Funda',     d: 'a corrente nunca recua abaixo de 7' },
+  ],
+  mente: [
+    { t: 1, n: 'Atenção',        d: '+5% de Seiva em Selagens' },
+    { t: 1, n: 'Curiosidade',    d: '+5% de Seiva no Herbário' },
+    { t: 1, n: 'Memória',        d: 'o Estrato mostra o mês anterior lado a lado' },
+    { t: 2, n: 'Análise',        d: 'bifurcação · caminho da profundidade', ramifica: true },
+    { t: 2, n: 'Síntese',        d: 'bifurcação · caminho da conexão', ramifica: true },
+    { t: 3, n: 'Recorte',        d: 'fragmenta tarefas em 5 Brotos, não 3' },
+    { t: 3, n: 'Foco Frio',      d: 'Selagem de 60 min disponível' },
+    { t: 3, n: 'Enxerto Duplo',  d: 'um Enxerto pode alimentar 2 Ramos' },
+    { t: 3, n: 'Leitura Rápida', d: '+15% de Seiva por página' },
+    { t: 4, n: 'Silêncio Fundo', d: 'Silêncio ativa em 6 min, não 12' },
+    { t: 4, n: 'Marginália',     d: 'notas em Folhas rendem 5 🩸' },
+    { t: 4, n: 'Índice',         d: 'slot de Epíteto' },
+    { t: 4, n: 'Vigília',        d: '+20% de Seiva depois da meia-noite' },
+    { t: 5, n: 'Mente de Vidro', d: 'Inclusão exclusiva: Traça de Prata' },
+    { t: 5, n: 'Anel de Leitura',d: 'teto de Enxertos por Ramo vai a +40%' },
+  ],
+  oficio: [
+    { t: 1, n: 'Mão Firme',      d: '+5% de Seiva em Brotos de Ofício' },
+    { t: 1, n: 'Bancada',        d: 'Anéis aceitam 8 etapas, não 5' },
+    { t: 1, n: 'Rascunho',       d: 'criar Broto por voz' },
+    { t: 2, n: 'Precisão',       d: 'bifurcação · caminho do acabamento', ramifica: true },
+    { t: 2, n: 'Volume',         d: 'bifurcação · caminho da quantidade', ramifica: true },
+    { t: 3, n: 'Lixa',           d: 'etapa final de Anel rende 2×' },
+    { t: 3, n: 'Molde',          d: 'duplica um Anel concluído como modelo' },
+    { t: 3, n: 'Serial',         d: '+8% por Broto além do 3º no dia' },
+    { t: 3, n: 'Encaixe',        d: 'dois Ciclos podem ser marcados juntos' },
+    { t: 4, n: 'Assinatura',     d: 'slot de Epíteto' },
+    { t: 4, n: 'Têmpera',        d: 'Vendaval rende +1 Fóssil de Casca' },
+    { t: 4, n: 'Oficina',        d: '+10% de Seiva em dias de semana' },
+    { t: 4, n: 'Aprendiz',       d: 'Bosque aceita 6 pessoas' },
+    { t: 5, n: 'Mão de Cerne',   d: 'Inclusão exclusiva: Formiga-Ferreira' },
+    { t: 5, n: 'Marca de Fogo',  d: 'Anel fechado concede Fóssil de Âmbar' },
+  ],
+  vinculo: [
+    { t: 1, n: 'Presença',       d: '+5% de Seiva em Brotos de Vínculo' },
+    { t: 1, n: 'Escuta',         d: 'Ciclos de Vínculo aceitam nota em 1 toque' },
+    { t: 1, n: 'Convite',        d: 'desbloqueia Bosque (party)' },
+    { t: 2, n: 'Confiança',      d: 'bifurcação · caminho do laço', ramifica: true },
+    { t: 2, n: 'Alcance',        d: 'bifurcação · caminho da rede', ramifica: true },
+    { t: 3, n: 'Elo',            d: 'Bosque divide 10% da Seiva do grupo' },
+    { t: 3, n: 'Espelho',        d: 'desbloqueia duelo por melhora relativa' },
+    { t: 3, n: 'Recado',         d: 'Pirilampo aparece 30% mais' },
+    { t: 3, n: 'Mesa',           d: 'Enxerto compartilhado com o Bosque' },
+    { t: 4, n: 'Nome',           d: 'slot de Epíteto' },
+    { t: 4, n: 'Fogueira',       d: 'Vendaval em Bosque rende +100 🩸' },
+    { t: 4, n: 'Herança',        d: 'Inclusão pode ser exibida a outros' },
+    { t: 4, n: 'Fim de Semana',  d: '+15% de Seiva sábado e domingo' },
+    { t: 5, n: 'Voz de Âmbar',   d: 'Inclusão exclusiva: Abelha-Mestra' },
+    { t: 5, n: 'Raiz Comum',     d: 'o Bosque compartilha a corrente mais alta' },
+  ],
+  cultura: [
+    { t: 1, n: 'Apetite',        d: '+5% de Seiva por obra prensada' },
+    { t: 1, n: 'Repertório',     d: 'Herbário sugere a próxima obra' },
+    { t: 1, n: 'Tradução',       d: 'obras em outro idioma rendem +20%' },
+    { t: 2, n: 'Erudição',       d: 'bifurcação · caminho da profundidade', ramifica: true },
+    { t: 2, n: 'Amplitude',      d: 'bifurcação · caminho da variedade', ramifica: true },
+    { t: 3, n: 'Contexto',       d: 'Enxerto rende +3%, não +2%' },
+    { t: 3, n: 'Cânone',         d: 'obras anteriores a 1950 rendem 2×' },
+    { t: 3, n: 'Maratona',       d: '+10% ao prensar 2 obras na semana' },
+    { t: 3, n: 'Deixar Ir',      d: '"Deixado ir" rende 25 🩸, não 10' },
+    { t: 4, n: 'Curadoria',      d: 'slot de Epíteto' },
+    { t: 4, n: 'Prancha',        d: 'Enxertos ganham página ilustrada dupla' },
+    { t: 4, n: 'Vitrine',        d: 'Folha favorita vira moldura na Estufa' },
+    { t: 4, n: 'Serão',         d: '+15% de Seiva depois das 21h' },
+    { t: 5, n: 'Olho de Âmbar',  d: 'Inclusão exclusiva: Borboleta-Códice' },
+    { t: 5, n: 'Herbário Vivo',  d: 'Enxertos detectados com 1 tag em comum' },
+  ],
+  ordem: [
+    { t: 1, n: 'Ritmo',          d: '+5% de Seiva em todos os Ciclos' },
+    { t: 1, n: 'Limpeza',        d: 'a poeira da Estufa nunca acumula' },
+    { t: 1, n: 'Preparo',        d: 'o Broto de amanhã é escolhido hoje' },
+    { t: 2, n: 'Disciplina',     d: 'bifurcação · caminho da corrente', ramifica: true },
+    { t: 2, n: 'Flexibilidade',  d: 'bifurcação · caminho do perdão', ramifica: true },
+    { t: 3, n: 'Elo de Ferro',   d: 'teto da corrente vai a 16 elos' },
+    { t: 3, n: 'Marco',          d: 'a corrente recua para 14, no mínimo' },
+    { t: 3, n: 'Bruma Densa',    d: '+2 fichas de Bruma por mês' },
+    { t: 3, n: 'Retorno',        d: 'voltar após pausa rende 2× por 3 dias' },
+    { t: 4, n: 'Ampulheta',      d: 'slot de Epíteto' },
+    { t: 4, n: 'Calendário',     d: 'Vendaval mostra o HP da próxima semana' },
+    { t: 4, n: 'Inventário',     d: 'Seiva investida pode ser realocada 1× por mês' },
+    { t: 4, n: 'Manhã',          d: 'primeiro Broto do dia rende 2×' },
+    { t: 5, n: 'Peso de Âmbar',  d: 'Inclusão exclusiva: Aranha-Relojoeira' },
+    { t: 5, n: 'Estrato Firme',  d: 'a corrente nunca recua' },
+  ],
+};
+
+/* ─── catálogo semente ───────────────────────────────────────────────────── */
+const CATALOGO = [
+  // mangá
+  { t: 'Vinland Saga', k: 'manga', y: 2005, total: 220, u: 'cap', nota: 8.9, tags: ['japão','vikings','história','seinen','guerra','redenção'] },
+  { t: 'Berserk', k: 'manga', y: 1989, total: 374, u: 'cap', nota: 9.5, tags: ['dark fantasy','medieval','seinen','trauma','guerra'] },
+  { t: 'Vagabond', k: 'manga', y: 1998, total: 327, u: 'cap', nota: 9.2, tags: ['japão','samurai','história','seinen','bushidō','musashi'] },
+  { t: 'Monster', k: 'manga', y: 1994, total: 162, u: 'cap', nota: 9.0, tags: ['thriller','alemanha','psicológico','seinen'] },
+  { t: 'Blame!', k: 'manga', y: 1997, total: 65, u: 'cap', nota: 8.3, tags: ['sci-fi','ciberpunk','arquitetura','silêncio'] },
+  { t: 'Oyasumi Punpun', k: 'manga', y: 2007, total: 147, u: 'cap', nota: 9.0, tags: ['drama','psicológico','juventude','japão'] },
+  { t: 'Kingdom', k: 'manga', y: 2006, total: 800, u: 'cap', nota: 9.0, tags: ['china','história','guerra','estratégia','seinen'] },
+  { t: 'Dorohedoro', k: 'manga', y: 2000, total: 167, u: 'cap', nota: 8.7, tags: ['dark fantasy','bizarro','magia','seinen'] },
+
+  // anime
+  { t: 'Mushishi', k: 'anime', y: 2005, total: 26, u: 'ep', nota: 8.7, tags: ['japão','folclore','natureza','contemplativo','episódico'] },
+  { t: 'Cowboy Bebop', k: 'anime', y: 1998, total: 26, u: 'ep', nota: 8.8, tags: ['sci-fi','jazz','espaço','noir','solidão'] },
+  { t: 'Ping Pong the Animation', k: 'anime', y: 2014, total: 11, u: 'ep', nota: 8.6, tags: ['esporte','juventude','japão','amizade'] },
+  { t: 'Serial Experiments Lain', k: 'anime', y: 1998, total: 13, u: 'ep', nota: 8.2, tags: ['sci-fi','ciberpunk','identidade','psicológico','rede'] },
+  { t: 'Vinland Saga (anime)', k: 'anime', y: 2019, total: 48, u: 'ep', nota: 8.7, tags: ['japão','vikings','história','guerra','redenção'] },
+  { t: 'Shōwa Genroku Rakugo Shinjū', k: 'anime', y: 2016, total: 25, u: 'ep', nota: 8.6, tags: ['japão','história','teatro','drama','ofício'] },
+  { t: 'Kaiba', k: 'anime', y: 2008, total: 12, u: 'ep', nota: 8.0, tags: ['sci-fi','memória','identidade','experimental'] },
+  { t: 'Frieren', k: 'anime', y: 2023, total: 28, u: 'ep', nota: 9.0, tags: ['fantasia','tempo','luto','viagem','contemplativo'] },
+
+  // jogos
+  { t: 'Ghost of Tsushima', k: 'jogo', y: 2020, total: 45, u: 'h', nota: 8.3, tags: ['japão','samurai','história','bushidō','mongóis','mundo aberto'] },
+  { t: 'Elden Ring', k: 'jogo', y: 2022, total: 90, u: 'h', nota: 9.6, tags: ['dark fantasy','medieval','mundo aberto','difícil','mito'] },
+  { t: 'Sekiro', k: 'jogo', y: 2019, total: 35, u: 'h', nota: 9.2, tags: ['japão','samurai','sengoku','difícil','bushidō'] },
+  { t: 'Hollow Knight', k: 'jogo', y: 2017, total: 40, u: 'h', nota: 9.0, tags: ['metroidvania','insetos','silêncio','difícil','ruínas'] },
+  { t: 'Outer Wilds', k: 'jogo', y: 2019, total: 22, u: 'h', nota: 9.1, tags: ['sci-fi','espaço','tempo','descoberta','mistério'] },
+  { t: 'Disco Elysium', k: 'jogo', y: 2019, total: 40, u: 'h', nota: 9.7, tags: ['rpg','política','psicológico','texto','noir'] },
+  { t: 'Death Stranding', k: 'jogo', y: 2019, total: 60, u: 'h', nota: 8.2, tags: ['sci-fi','caminhada','solidão','conexão','pós-apocalipse'] },
+  { t: 'Nier: Automata', k: 'jogo', y: 2017, total: 38, u: 'h', nota: 9.0, tags: ['sci-fi','existencial','androides','música','pós-apocalipse'] },
+  { t: 'Kingdom Come: Deliverance', k: 'jogo', y: 2018, total: 70, u: 'h', nota: 8.0, tags: ['medieval','história','boêmia','simulação','difícil'] },
+  { t: 'Subnautica', k: 'jogo', y: 2018, total: 40, u: 'h', nota: 8.7, tags: ['sobrevivência','oceano','sci-fi','medo','exploração'] },
+  { t: 'Stardew Valley', k: 'jogo', y: 2016, total: 100, u: 'h', nota: 8.9, tags: ['fazenda','rotina','calmo','ciclos','comunidade'] },
+  { t: 'Return of the Obra Dinn', k: 'jogo', y: 2018, total: 10, u: 'h', nota: 8.9, tags: ['mistério','dedução','navio','1800','monocromático'] },
+
+  // livros
+  { t: 'Musashi', a: 'Eiji Yoshikawa', k: 'livro', y: 1935, total: 970, u: 'pág', nota: 8.9, tags: ['japão','samurai','história','bushidō','musashi','jornada'] },
+  { t: 'Hagakure', a: 'Yamamoto Tsunetomo', k: 'livro', y: 1716, total: 180, u: 'pág', nota: 7.8, tags: ['japão','samurai','filosofia','bushidō','morte'] },
+  { t: 'O Livro dos Cinco Anéis', a: 'Miyamoto Musashi', k: 'livro', y: 1645, total: 120, u: 'pág', nota: 8.1, tags: ['japão','samurai','estratégia','bushidō','musashi'] },
+  { t: 'Duna', a: 'Frank Herbert', k: 'livro', y: 1965, total: 680, u: 'pág', nota: 9.0, tags: ['sci-fi','deserto','política','ecologia','messias'] },
+  { t: 'Meditações', a: 'Marco Aurélio', k: 'livro', y: 180, total: 250, u: 'pág', nota: 8.6, tags: ['filosofia','estoicismo','roma','disciplina','morte'] },
+  { t: 'O Elogio da Sombra', a: 'Junichirō Tanizaki', k: 'livro', y: 1933, total: 96, u: 'pág', nota: 8.2, tags: ['japão','estética','arquitetura','luz','ensaio'] },
+  { t: 'Sapiens', a: 'Yuval Noah Harari', k: 'livro', y: 2011, total: 464, u: 'pág', nota: 8.1, tags: ['história','antropologia','ensaio','humanidade'] },
+  { t: 'A Guerra do Fim do Mundo', a: 'Mario Vargas Llosa', k: 'livro', y: 1981, total: 640, u: 'pág', nota: 8.7, tags: ['brasil','história','guerra','sertão','fanatismo'] },
+  { t: 'Grande Sertão: Veredas', a: 'João Guimarães Rosa', k: 'livro', y: 1956, total: 624, u: 'pág', nota: 9.1, tags: ['brasil','sertão','linguagem','jornada','pacto'] },
+  { t: 'O Nome do Vento', a: 'Patrick Rothfuss', k: 'livro', y: 2007, total: 662, u: 'pág', nota: 8.5, tags: ['fantasia','música','universidade','narrador'] },
+  { t: 'Neuromancer', a: 'William Gibson', k: 'livro', y: 1984, total: 320, u: 'pág', nota: 8.0, tags: ['sci-fi','ciberpunk','rede','japão','noir'] },
+  { t: 'O Corpo Fala com o Cérebro', a: 'Antonio Damasio', k: 'livro', y: 1994, total: 336, u: 'pág', nota: 8.0, tags: ['neurociência','emoção','ensaio','corpo'] },
+  { t: 'Hábitos Atômicos', a: 'James Clear', k: 'livro', y: 2018, total: 320, u: 'pág', nota: 7.9, tags: ['hábitos','comportamento','produtividade','ensaio'] },
+  { t: 'Fora de Série', a: 'Malcolm Gladwell', k: 'livro', y: 2008, total: 288, u: 'pág', nota: 7.5, tags: ['comportamento','prática','ensaio','sucesso'] },
+  { t: 'A Montanha Mágica', a: 'Thomas Mann', k: 'livro', y: 1924, total: 928, u: 'pág', nota: 8.8, tags: ['alemanha','tempo','doença','filosofia','montanha'] },
+  { t: 'O Deserto dos Tártaros', a: 'Dino Buzzati', k: 'livro', y: 1940, total: 224, u: 'pág', nota: 8.6, tags: ['espera','tempo','fortaleza','existencial'] },
+
+  // filmes
+  { t: 'Sete Samurais', k: 'filme', y: 1954, total: 207, u: 'min', nota: 9.0, tags: ['japão','samurai','história','kurosawa','aldeia'] },
+  { t: 'Ran', k: 'filme', y: 1985, total: 162, u: 'min', nota: 8.2, tags: ['japão','samurai','kurosawa','shakespeare','guerra'] },
+  { t: 'Blade Runner 2049', k: 'filme', y: 2017, total: 164, u: 'min', nota: 8.0, tags: ['sci-fi','ciberpunk','identidade','noir','memória'] },
+  { t: 'Stalker', k: 'filme', y: 1979, total: 162, u: 'min', nota: 8.1, tags: ['sci-fi','zona','contemplativo','fé','tarkovsky'] },
+  { t: 'Perfect Days', k: 'filme', y: 2023, total: 124, u: 'min', nota: 7.9, tags: ['japão','rotina','contemplativo','tóquio','ciclos'] },
+  { t: 'Cidade de Deus', k: 'filme', y: 2002, total: 130, u: 'min', nota: 8.6, tags: ['brasil','favela','violência','juventude'] },
+  { t: 'O Auto da Compadecida', k: 'filme', y: 2000, total: 104, u: 'min', nota: 8.6, tags: ['brasil','sertão','comédia','fé','folclore'] },
+  { t: 'Whiplash', k: 'filme', y: 2014, total: 106, u: 'min', nota: 8.5, tags: ['música','obsessão','disciplina','ofício'] },
+
+  // séries
+  { t: 'Shōgun', k: 'serie', y: 2024, total: 10, u: 'ep', nota: 8.6, tags: ['japão','história','samurai','política','sengoku'] },
+  { t: 'Chernobyl', k: 'serie', y: 2019, total: 5, u: 'ep', nota: 9.3, tags: ['história','urss','desastre','burocracia','verdade'] },
+  { t: 'Dark', k: 'serie', y: 2017, total: 26, u: 'ep', nota: 8.7, tags: ['sci-fi','tempo','alemanha','família','ciclos'] },
+  { t: 'Severance', k: 'serie', y: 2022, total: 19, u: 'ep', nota: 8.7, tags: ['sci-fi','trabalho','memória','identidade','burocracia'] },
+  { t: 'Cosmos', k: 'serie', y: 1980, total: 13, u: 'ep', nota: 9.3, tags: ['ciência','espaço','divulgação','maravilhamento'] },
+
+  // álbuns
+  { t: 'Clube da Esquina', a: 'Milton Nascimento', k: 'album', y: 1972, total: 1, u: 'escuta', nota: 9.4, tags: ['brasil','mpb','minas','coletivo'] },
+  { t: 'Kid A', a: 'Radiohead', k: 'album', y: 2000, total: 1, u: 'escuta', nota: 9.0, tags: ['eletrônico','alienação','experimental'] },
+  { t: 'Nier: Automata OST', a: 'Keiichi Okabe', k: 'album', y: 2017, total: 1, u: 'escuta', nota: 9.2, tags: ['trilha sonora','sci-fi','existencial','coral'] },
+  { t: 'Tim Maia Racional Vol. 1', a: 'Tim Maia', k: 'album', y: 1975, total: 1, u: 'escuta', nota: 8.9, tags: ['brasil','soul','fé','racional'] },
+  { t: 'Music for Airports', a: 'Brian Eno', k: 'album', y: 1978, total: 1, u: 'escuta', nota: 8.7, tags: ['ambiente','silêncio','contemplativo','espera'] },
+];
+
+/* Enxertos curados: pares nomeados à mão, com bônus dobrado e Fóssil.
+ * Os demais Enxertos são detectados automaticamente por ≥2 tags em comum. */
+const ENXERTOS_CURADOS = [
+  { a: 'Musashi', b: 'Ghost of Tsushima', nome: 'Bushidō Vivido', ramo: 'cultura',
+    txt: 'Você leu o caminho e depois o andou. A espada deixou de ser metáfora.' },
+  { a: 'O Livro dos Cinco Anéis', b: 'Sekiro', nome: 'Postura de Água', ramo: 'corpo',
+    txt: 'Estratégia escrita em 1645, executada com o polegar em 2019.' },
+  { a: 'Hagakure', b: 'Vagabond', nome: 'Morte Diária', ramo: 'ordem',
+    txt: 'Duas leituras da mesma frase: o samurai já está morto.' },
+  { a: 'Duna', b: 'Subnautica', nome: 'Ecologia do Medo', ramo: 'mente',
+    txt: 'Deserto e oceano são o mesmo problema: um lugar que não te quer.' },
+  { a: 'Neuromancer', b: 'Serial Experiments Lain', nome: 'Fio de Cobre', ramo: 'mente',
+    txt: 'O ciberespaço saiu do livro e virou solidão em 13 episódios.' },
+  { a: 'Meditações', b: 'Hábitos Atômicos', nome: 'Roma Cotidiana', ramo: 'ordem',
+    txt: 'Dois mil anos separam os livros. O conselho é o mesmo: hoje.' },
+  { a: 'Grande Sertão: Veredas', b: 'A Guerra do Fim do Mundo', nome: 'Sertão em Chamas', ramo: 'cultura',
+    txt: 'O mesmo chão, dois pactos: um com o diabo, outro com o fim do mundo.' },
+  { a: 'Sete Samurais', b: 'Kingdom', nome: 'Aldeia e Império', ramo: 'vinculo',
+    txt: 'Sete homens para uma aldeia; um exército para a China. A escala muda, a tática não.' },
+  { a: 'Whiplash', b: 'Shōwa Genroku Rakugo Shinjū', nome: 'Ofício que Dói', ramo: 'oficio',
+    txt: 'Duas histórias sobre o preço exato da excelência.' },
+  { a: 'Perfect Days', b: 'Mushishi', nome: 'Dias Iguais', ramo: 'ordem',
+    txt: 'A repetição como forma de atenção, não como prisão.' },
+  { a: 'Berserk', b: 'Elden Ring', nome: 'Eclipse Dourado', ramo: 'cultura',
+    txt: 'Um mangá de 1989 desenhando o mundo que você jogou em 2022.' },
+  { a: 'Outer Wilds', b: 'Frieren', nome: 'Tempo Emprestado', ramo: 'mente',
+    txt: 'Vinte e dois minutos e mil anos: as duas formas de olhar um relógio.' },
+];
+
+/* Inclusões · artefato vivo em 3 estágios. desbl = predicado sobre o estado */
+const INCLUSOES = [
+  { id: 'escaravelho', nome: 'Escaravelho de Bronze', ramo: 'corpo',  bicho: 'beetle',
+    lore: 'Rolou a mesma pedra por tanto tempo que a pedra virou sol.',
+    desbl: (s) => s.ciclosFeitos >= 10, dica: 'cumpra 10 Ciclos' },
+  { id: 'traca', nome: 'Traça de Prata', ramo: 'mente', bicho: 'moth',
+    lore: 'Come páginas e devolve pó luminoso.',
+    desbl: (s) => s.folhasPrensadas >= 3, dica: 'prense 3 obras' },
+  { id: 'formiga', nome: 'Formiga-Ferreira', ramo: 'oficio', bicho: 'ant',
+    lore: 'Carrega quinze vezes o próprio peso e nunca menciona isso.',
+    desbl: (s) => s.brotosFeitos >= 25, dica: 'conclua 25 Brotos' },
+  { id: 'abelha', nome: 'Abelha-Mestra', ramo: 'vinculo', bicho: 'bee',
+    lore: 'Não faz mel sozinha. Nunca fez.',
+    desbl: (s) => s.enxertos >= 1, dica: 'faça 1 Enxerto' },
+  { id: 'borboleta', nome: 'Borboleta-Códice', ramo: 'cultura', bicho: 'butterfly',
+    lore: 'As asas são duas páginas do mesmo livro, abertas ao meio.',
+    desbl: (s) => s.folhasPrensadas >= 8, dica: 'prense 8 obras' },
+  { id: 'aranha', nome: 'Aranha-Relojoeira', ramo: 'ordem', bicho: 'spider',
+    lore: 'Refaz a teia toda noite. Nunca reclamou da noite anterior.',
+    desbl: (s) => s.elosMax >= 7, dica: 'alcance 7 elos de corrente' },
+  { id: 'semente', nome: 'Semente Adormecida', ramo: 'ordem', bicho: 'seed',
+    lore: 'Esperou quarenta mil anos. Ainda germina.',
+    desbl: (s) => s.diasRetorno >= 1, dica: 'volte depois de uma pausa' },
+  { id: 'pena', nome: 'Pena de Corvo', ramo: 'mente', bicho: 'feather',
+    lore: 'Caiu de algo que estava indo embora.',
+    desbl: (s) => s.selagens >= 5, dica: 'complete 5 Selagens' },
+  { id: 'libelula', nome: 'Libélula de Estio', ramo: 'corpo', bicho: 'dragonfly',
+    lore: 'Vive um dia inteiro como se fosse suficiente. E é.',
+    desbl: (s) => s.vendavaisVencidos >= 1, dica: 'vença 1 Vendaval' },
+  { id: 'vagalume', nome: 'Pirilampo Preso', ramo: 'vinculo', bicho: 'firefly',
+    lore: 'Aceitou ficar. Ninguém pediu.',
+    desbl: (s) => s.lampoAtendidos >= 3, dica: 'atenda o Pirilampo 3 vezes' },
+  { id: 'folhaoro', nome: 'Folha de Ouro', ramo: 'cultura', bicho: 'leaf',
+    lore: 'Caiu no outono errado e endureceu antes de tocar o chão.',
+    desbl: (s) => s.camada >= 10, dica: 'alcance a Camada 10' },
+  { id: 'anelcerne', nome: 'Anel de Cerne', ramo: 'oficio', bicho: 'ring',
+    lore: 'Um ano inteiro comprimido em três milímetros.',
+    desbl: (s) => s.aneisFechados >= 1, dica: 'feche 1 Anel' },
+];
+
+/* Fósseis · troféus. oculto = só aparece com 50% do critério cumprido */
+const FOSSEIS = [
+  { id: 'f1',  nome: 'Primeira Gota',      r: 'casca', d: 'seu primeiro registro',              p: (s) => s.acoes >= 1 },
+  { id: 'f2',  nome: 'Três Elos',          r: 'casca', d: '3 dias seguidos de Ciclo',            p: (s) => s.elosMax >= 3 },
+  { id: 'f3',  nome: 'Primeira Folha',     r: 'casca', d: 'uma obra prensada',                   p: (s) => s.folhasPrensadas >= 1 },
+  { id: 'f4',  nome: 'Resina Fresca',      r: 'casca', d: 'uma Selagem concluída',               p: (s) => s.selagens >= 1 },
+  { id: 'f5',  nome: 'Mão de Ferreiro',    r: 'cerne', d: '50 Brotos concluídos',                p: (s) => s.brotosFeitos >= 50 },
+  { id: 'f6',  nome: 'Doze Elos',          r: 'cerne', d: 'corrente de 12 elos',                 p: (s) => s.elosMax >= 12 },
+  { id: 'f7',  nome: 'Tempestade Vencida', r: 'cerne', d: 'um Vendaval derrotado',               p: (s) => s.vendavaisVencidos >= 1 },
+  { id: 'f8',  nome: 'O Retorno da Seiva', r: 'cerne', d: 'voltar depois de 30 dias parado',     p: (s) => s.maiorPausa >= 30 },
+  { id: 'f9',  nome: 'Enxertador',         r: 'cerne', d: 'um Enxerto realizado',                p: (s) => s.enxertos >= 1 },
+  { id: 'f10', nome: 'Camada Dez',         r: 'cerne', d: 'alcançar a Camada 10',                p: (s) => s.camada >= 10 },
+  { id: 'f11', nome: 'Herbário Cheio',     r: 'ambar', d: '25 obras prensadas',                  p: (s) => s.folhasPrensadas >= 25 },
+  { id: 'f12', nome: 'Copa Definida',      r: 'ambar', d: 'ter uma Silhueta revelada',           p: (s) => !!s.silhuetaDefinida },
+  { id: 'f13', nome: 'Anel de Crescimento',r: 'ambar', d: 'fechar um Anel completo',             p: (s) => s.aneisFechados >= 1 },
+  { id: 'f14', nome: 'Cinco Vivas',        r: 'ambar', d: '5 Inclusões despertas',               p: (s) => s.inclusoesDespertas >= 5 },
+  { id: 'f15', nome: 'Estrato Fundo',      r: 'ambar', d: 'alcançar a Camada 30',                p: (s) => s.camada >= 30 },
+  { id: 'f16', nome: 'Ambarista',          r: 'prisma',d: '3 Podas e 5 Inclusões Plenas',        p: (s) => s.podas >= 3 && s.inclusoesPlenas >= 5 },
+  // ocultos
+  { id: 'o1', nome: 'Leitor Noturno',   r: 'ambar',  d: 'uma Selagem limpa depois das 3h',     p: (s) => s.selagemMadrugada, oculto: true, meia: 'algo acontece quando a cidade dorme' },
+  { id: 'o2', nome: 'Língua Estranha',  r: 'ambar',  d: 'prensar obra em outro idioma',        p: (s) => s.obraEstrangeira,  oculto: true, meia: 'o Herbário aceita mais de um idioma' },
+  { id: 'o3', nome: 'Deixar Ir',        r: 'cerne',  d: 'abandonar 3 obras consciente',        p: (s) => s.deixadas >= 3,    oculto: true, meia: 'parar também é uma decisão' },
+  { id: 'o4', nome: 'Amigo do Lampo',   r: 'prisma', d: 'atender o Pirilampo 10 vezes',        p: (s) => s.lampoAtendidos >= 10, oculto: true, meia: 'ele repara em quem repara nele' },
+  { id: 'o5', nome: 'Uma Coisa Só',     r: 'ambar',  d: 'uma Selagem de 40 min sem interrupção',p: (s) => s.selagemPerfeita,  oculto: true, meia: 'quarenta minutos inteiros existem' },
+];
+
+const EPITETOS = [
+  { id: 'e1', nome: 'O Insone',      d: 'lembretes migram para a madrugada · +10% depois das 0h', req: (s) => s.selagemMadrugada },
+  { id: 'e2', nome: 'O Constante',   d: '+5% de Seiva em Ciclos',                                 req: (s) => s.elosMax >= 12 },
+  { id: 'e3', nome: 'O Enxertador',  d: 'Enxertos rendem +1%',                                    req: (s) => s.enxertos >= 3 },
+  { id: 'e4', nome: 'O Que Voltou',  d: '+15% por 3 dias após qualquer pausa',                    req: (s) => s.maiorPausa >= 7 },
+  { id: 'e5', nome: 'O Curioso',     d: '+5% no Herbário',                                        req: (s) => s.folhasPrensadas >= 10 },
+  { id: 'e6', nome: 'O Prensador',   d: 'obras curtas rendem +20%',                               req: (s) => s.folhasPrensadas >= 20 },
+];
+
+const SILHUETAS = {
+  'corpo+ordem':     { nome: 'Monge de Pedra',        b: '+6% em Ciclos antes das 9h' },
+  'mente+cultura':   { nome: 'Erudito das Marés',     b: '+6% por página lida' },
+  'oficio+ordem':    { nome: 'Ferreiro Silencioso',   b: '+6% em etapas de Anel' },
+  'cultura+vinculo': { nome: 'Contador de Histórias', b: '+6% ao prensar obras' },
+  'corpo+vinculo':   { nome: 'Guardião do Bosque',    b: '+6% em Vendavais' },
+  'mente+oficio':    { nome: 'Alquimista Prático',    b: '+6% em Selagens' },
+  'corpo+mente':     { nome: 'Asceta de Vidro',       b: '+6% em Brotos Pesados' },
+  'oficio+cultura':  { nome: 'Artesão de Margens',    b: '+6% em Enxertos' },
+  'vinculo+ordem':   { nome: 'Guardião da Casa',      b: '+6% em Ciclos de Vínculo' },
+  'mente+ordem':     { nome: 'Cartógrafo Paciente',   b: '+6% no primeiro Broto do dia' },
+  'corpo+cultura':   { nome: 'Peregrino',             b: '+6% em fins de semana' },
+  'oficio+vinculo':  { nome: 'Mestre de Obras',       b: '+6% em Bosque' },
+};
+
+const ESTACOES = [
+  { id: 'brotacao', nome: 'Brotação', tema: 'o que começa mesmo sem garantia', acento: '#8FA85C', meses: [8, 9, 10] },
+  { id: 'estio',    nome: 'Estio',    tema: 'resistir ao que não dá trégua',    acento: '#D98A2B', meses: [11, 0, 1] },
+  { id: 'resina',   nome: 'Resina',   tema: 'fixar o que estava escorrendo',    acento: '#E8A33D', meses: [2, 3, 4] },
+  { id: 'repouso',  nome: 'Repouso',  tema: 'a raiz trabalha no escuro',        acento: '#6F7FA3', meses: [5, 6, 7] },
+];
+
+/* Verbos de início usados na fragmentação automática em Brotos */
+const FRAGMENTOS = [
+  { v: 'abrir',    m: 'abrir %s e não fazer mais nada',        min: 2 },
+  { v: 'separar',  m: 'separar o que precisa para %s',         min: 3 },
+  { v: 'escrever', m: 'escrever 3 linhas sobre %s',            min: 4 },
+  { v: 'listar',   m: 'listar o primeiro passo de %s',         min: 2 },
+  { v: 'tocar',    m: 'passar 5 minutos em %s e parar',        min: 5 },
+];
+
+const CICLOS_SEMENTE = [
+  { id: 'c1', nome: 'Ler 10 páginas',    ramo: 'cultura', glifo: '☾', dif: 1.0 },
+  { id: 'c2', nome: 'Mover o corpo',     ramo: 'corpo',   glifo: '🜂', dif: 1.5 },
+  { id: 'c3', nome: 'Beber água',        ramo: 'corpo',   glifo: '🜄', dif: 1.0 },
+];
+
+const ANEIS_SEMENTE = [
+  { id: 'an1', nome: 'Terminar Vinland Saga', ramo: 'cultura',
+    etapas: ['chegar ao capítulo 100', 'chegar ao capítulo 150', 'chegar ao capítulo 200', 'prensar a obra'] },
+];
+
+window.DB = { RAMOS, NOS, CATALOGO, ENXERTOS_CURADOS, INCLUSOES, FOSSEIS, EPITETOS,
+              SILHUETAS, ESTACOES, FRAGMENTOS, CICLOS_SEMENTE, ANEIS_SEMENTE };
+
+/* ÂMBAR · núcleo
+ * Regra absoluta deste arquivo: NÃO EXISTE SUBTRAÇÃO DE ÂMBAR.
+ * O ledger é append-only. Nenhuma função aqui remove, edita ou zera uma entrada.
+ * Ver docs/4-progressao-matematica.md
+ */
+(function () {
+  'use strict';
+  const DB = window.DB;
+  const CHAVE = 'ambar.v1';
+
+  /* ─── tempo ───────────────────────────────────────────────────────────── */
+  const dia = (d = new Date()) => {
+    const z = new Date(d.getTime() - d.getTimezoneOffset() * 6e4);
+    return z.toISOString().slice(0, 10);
+  };
+  const diasEntre = (a, b) => Math.round((new Date(b + 'T00:00') - new Date(a + 'T00:00')) / 864e5);
+  const semanaDe = (d = new Date()) => {
+    const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    t.setDate(t.getDate() - ((t.getDay() + 6) % 7));           // segunda
+    return dia(t);
+  };
+  const mesDe = (d = new Date()) => dia(d).slice(0, 7);
+
+  /* ─── estado ──────────────────────────────────────────────────────────── */
+  const inicial = () => ({
+    v: 1,
+    criado: Date.now(),
+    ledger: [],                    // append-only: {t, s, k, r}
+    gasto: 0,
+    nos: [],                       // 'ramo:indice'
+    invest: {},                    // ramo -> seiva investida
+    folhas: [],
+    ciclos: DB.CICLOS_SEMENTE.map((c) => ({ ...c, ultimo: null })),
+    aneis: DB.ANEIS_SEMENTE.map((a) => ({ ...a, etapas: a.etapas.map((t) => ({ t, ok: false })) })),
+    brotos: [],
+    adiados: {},
+    elos: 0, elosMax: 0, ultimoCiclo: null, congelado: 0,
+    bruma: { mes: mesDe(), fichas: 2 },
+    inclusoes: {},                 // id -> {estagio 0|1|2, alim}
+    fosseis: [],
+    epitetos: [null, null],
+    vendaval: { semana: semanaDe(), dano: 0, vencido: false },
+    enxertos: [],
+    silhueta: null, silhuetaCalc: 0,
+    podas: 0,
+    marcas: {                      // gatilhos de Fósseis Ocultos
+      selagemMadrugada: false, selagemPerfeita: false, obraEstrangeira: false,
+      lampoAtendidos: 0, deixadas: 0, maiorPausa: 0, diasRetorno: 0,
+      selagens: 0, vendavaisVencidos: 0, aneisFechados: 0,
+      brotosFeitos: 0, ciclosFeitos: 0,
+    },
+    ultimoAcesso: dia(),
+    prefs: { tema: 'escuro', som: true, haptic: true },
+    lampo: { ultimo: 0, ativo: null },
+  });
+
+  let s = inicial();
+
+  function carregar() {
+    try {
+      const bruto = localStorage.getItem(CHAVE);
+      if (bruto) {
+        const salvo = JSON.parse(bruto);
+        s = Object.assign(inicial(), salvo);
+        s.marcas = Object.assign(inicial().marcas, salvo.marcas || {});
+        s.prefs = Object.assign(inicial().prefs, salvo.prefs || {});
+      }
+    } catch (e) { console.warn('estado ilegível, começando limpo', e); }
+    manutencaoDiaria();
+    return s;
+  }
+  const salvar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(s)); } catch (e) {} };
+
+  /* ─── economia ────────────────────────────────────────────────────────── */
+  const ambar = () => s.ledger.reduce((a, e) => a + e.s, 0);
+  const seiva = () => Math.max(0, ambar() - s.gasto);
+
+  const A = (n) => Math.round(60 * Math.pow(n, 1.55));
+  const camada = () => Math.max(1, Math.floor(Math.pow(ambar() / 60, 1 / 1.55)));
+  function progressoCamada() {
+    const n = camada(), a = ambar(), base = A(n), topo = A(n + 1);
+    return { n, a, base, topo, pc: Math.max(0, Math.min(1, (a - base) / (topo - base))) };
+  }
+
+  const multCorrente = () => 1 + 0.04 * Math.min(s.elos, 12);
+  const multEnxerto = (ramo) => 1 + Math.min(0.30, 0.02 * s.enxertos.filter((e) => e.ramo === ramo).length);
+  const multCerne = () => 1 + Math.min(0.40, 0.08 * s.podas);
+  function multFoco(min, interrup) {
+    const bruto = 1 + 0.015 * Math.min(min, 40);
+    const pureza = Math.max(0.40, 1 - 0.20 * interrup);
+    return 1 + (bruto - 1) * pureza;                     // sempre ≥ 1
+  }
+
+  /* S = B · D · C · F · E · (1+Enx) · (1+Cerne) */
+  function calcular({ base, dif = 1, ramo = 'ordem', foco = 1, evento = 1 }) {
+    return Math.max(1, Math.round(base * dif * multCorrente() * foco * evento
+      * multEnxerto(ramo) * multCerne()));
+  }
+
+  /* único ponto de entrada de Seiva no sistema. Só empilha. */
+  function registrar(op) {
+    const q = calcular(op);
+    s.ledger.push({ t: Date.now(), s: q, k: op.k || 'acao', r: op.r || '', m: op.ramo || 'ordem' });
+    const novos = revisar();
+    salvar();
+    return { seiva: q, novos };
+  }
+
+  function gastar(q) {
+    if (seiva() < q) return false;
+    s.gasto += q;                     // gasto NUNCA toca o ledger → Âmbar intacto
+    salvar();
+    return true;
+  }
+
+  /* ─── corrente (chains) ───────────────────────────────────────────────── */
+  const MARCOS = [30, 14, 7, 3, 0];
+  function avaliarCorrente() {
+    if (!s.ultimoCiclo) return;
+    const g = diasEntre(s.ultimoCiclo, dia());
+    if (g <= 1) { s.congelado = 0; return; }
+    let perdidos = g - 1;
+    if (s.bruma.mes !== mesDe()) s.bruma = { mes: mesDe(), fichas: 2 };
+    while (perdidos > 0 && s.bruma.fichas > 0) { s.bruma.fichas--; perdidos--; }  // perdão silencioso
+    if (perdidos <= 0) { s.congelado = 0; return; }
+    if (perdidos <= 3) { s.congelado = perdidos; return; }                        // turvação
+    s.elos = MARCOS.find((m) => m <= s.elos) ?? 0;                               // recua ao marco
+    s.congelado = 0;
+  }
+
+  function marcarCiclo(c) {
+    if (c.ultimo === dia()) return null;
+    const hoje = dia();
+    if (s.ultimoCiclo !== hoje) {
+      const g = s.ultimoCiclo ? diasEntre(s.ultimoCiclo, hoje) : 1;
+      s.elos = g <= 1 || s.congelado ? s.elos + 1 : Math.max(1, s.elos);
+      s.elosMax = Math.max(s.elosMax, s.elos);
+      s.ultimoCiclo = hoje;
+      s.congelado = 0;
+    }
+    c.ultimo = hoje;
+    s.marcas.ciclosFeitos++;
+    return registrar({ base: 15, dif: c.dif, ramo: c.ramo, k: 'ciclo', r: c.nome });
+  }
+
+  /* ─── manutenção de abertura ──────────────────────────────────────────── */
+  function manutencaoDiaria() {
+    const hoje = dia();
+    const pausa = s.ultimoAcesso ? diasEntre(s.ultimoAcesso, hoje) : 0;
+    if (pausa > 1) {
+      s.marcas.maiorPausa = Math.max(s.marcas.maiorPausa, pausa - 1);
+      s.marcas.diasRetorno++;
+    }
+    s.ultimoAcesso = hoje;
+    if (s.bruma.mes !== mesDe()) s.bruma = { mes: mesDe(), fichas: 2 };
+    avaliarCorrente();
+    if (s.vendaval.semana !== semanaDe()) s.vendaval = { semana: semanaDe(), dano: 0, vencido: false };
+    s.pausaAtual = pausa;
+    salvar();
+  }
+
+  /* ─── vendaval ────────────────────────────────────────────────────────── */
+  function somaSemanal(inicioISO) {
+    const ini = new Date(inicioISO + 'T00:00').getTime(), fim = ini + 7 * 864e5;
+    return s.ledger.filter((e) => e.t >= ini && e.t < fim).reduce((a, e) => a + e.s, 0);
+  }
+  function vendavalHP() {
+    const base = new Date(semanaDe() + 'T00:00');
+    const semanas = [1, 2, 3, 4].map((i) => {
+      const d = new Date(base); d.setDate(d.getDate() - 7 * i); return somaSemanal(dia(d));
+    }).filter((v) => v > 0).sort((a, b) => a - b);
+    if (semanas.length < 2) return 300;
+    const m = semanas.length % 2
+      ? semanas[(semanas.length - 1) / 2]
+      : (semanas[semanas.length / 2 - 1] + semanas[semanas.length / 2]) / 2;
+    return Math.max(300, Math.round(0.8 * m));
+  }
+  function danoVendaval(q) {
+    if (s.vendaval.vencido) return null;
+    s.vendaval.dano += q;
+    if (s.vendaval.dano >= vendavalHP()) {
+      s.vendaval.vencido = true;
+      s.marcas.vendavaisVencidos++;
+      const r = registrar({ base: 200, ramo: 'ordem', k: 'vendaval', r: 'tempestade vencida' });
+      return r;
+    }
+    return null;
+  }
+
+  /* ─── ramos, nós, silhueta ────────────────────────────────────────────── */
+  const custoNo = (t) => Math.round(50 * Math.pow(1.9, t - 1));
+  const temNo = (ramo, i) => s.nos.includes(ramo + ':' + i);
+
+  function nosDisponiveis(ramo) {
+    const lista = DB.NOS[ramo];
+    const out = [];
+    lista.forEach((no, i) => {
+      if (temNo(ramo, i)) return;
+      const anteriores = lista.filter((n, j) => n.t === no.t - 1 && temNo(ramo, j)).length;
+      if (no.t === 1 || anteriores > 0) {
+        // bifurcação exclusiva na profundidade 2
+        if (no.ramifica && lista.some((n, j) => n.ramifica && temNo(ramo, j))) return;
+        out.push({ ramo, i, ...no, custo: custoNo(no.t) });
+      }
+    });
+    return out;
+  }
+  /* a interface mostra no máximo 4 · custo mais baixo primeiro, Ramo mais ativo depois */
+  function quatroNos() {
+    const ativos = ramoAtividade();
+    return DB.RAMOS.flatMap((r) => nosDisponiveis(r.id))
+      .sort((a, b) => a.custo - b.custo || (ativos[b.ramo] || 0) - (ativos[a.ramo] || 0))
+      .slice(0, 4);
+  }
+  /* Seiva por Ramo nos últimos 7 dias — decide quais 4 nós a tela oferece */
+  function ramoAtividade() {
+    const lim = Date.now() - 7 * 864e5, out = {};
+    s.ledger.filter((e) => e.t >= lim).forEach((e) => { out[e.m] = (out[e.m] || 0) + e.s; });
+    return out;
+  }
+  function comprarNo(n) {
+    if (!gastar(n.custo)) return false;
+    s.nos.push(n.ramo + ':' + n.i);
+    s.invest[n.ramo] = (s.invest[n.ramo] || 0) + n.custo;
+    revisar(); salvar();
+    return true;
+  }
+
+  function calcularSilhueta(forcar) {
+    const semana = 7 * 864e5;
+    if (!forcar && Date.now() - s.silhuetaCalc < semana) return s.silhueta;
+    const V = Object.values(s.invest).reduce((a, b) => a + b, 0);
+    s.silhuetaCalc = Date.now();
+    if (!V) { s.silhueta = null; salvar(); return null; }
+    const p = Object.entries(s.invest).map(([r, v]) => [r, v / V]).sort((a, b) => b[1] - a[1]);
+    const [t1, t2] = [p[0], p[1] || ['', 0]];
+    if (t1[1] >= 0.25 && t2[1] >= 0.25 && t1[1] + t2[1] >= 0.55) {
+      const k1 = [t1[0], t2[0]].sort().join('+');
+      const def = DB.SILHUETAS[k1] || DB.SILHUETAS[[t2[0], t1[0]].join('+')];
+      s.silhueta = def ? { chave: k1, ...def } : null;
+    } else s.silhueta = null;
+    salvar();
+    return s.silhueta;
+  }
+
+  /* ─── herbário ────────────────────────────────────────────────────────── */
+  const SEIVA_MIDIA = {
+    livro: { por: 10, q: 1, fim: 20 }, manga: { por: 1, q: 3, fim: 30 },
+    anime: { por: 1, q: 2, fim: 25 },  serie: { por: 1, q: 2, fim: 25 },
+    jogo:  { por: 10, q: 1, fim: 25 }, filme: { por: 20, q: 2, fim: 8 },
+    album: { por: 1, q: 4, fim: 4 },
+  };
+  function prensarFolha(f, estado) {
+    const antes = f.estado; f.estado = estado;
+    if (estado === 'prensado' && antes !== 'prensado') {
+      f.prog = f.total;
+      s.marcas.obraEstrangeira = s.marcas.obraEstrangeira || !!f.estrangeira;
+      const r = registrar({ base: (SEIVA_MIDIA[f.k] || SEIVA_MIDIA.livro).fim, ramo: 'cultura', k: 'folha', r: f.t });
+      salvar(); return r;
+    }
+    if (estado === 'deixado') {
+      s.marcas.deixadas++;
+      const bonus = temNo('cultura', 8) ? 25 : 10;
+      const r = registrar({ base: bonus, ramo: 'cultura', k: 'folha', r: 'deixou ir · ' + f.t });
+      salvar(); return r;
+    }
+    salvar(); return null;
+  }
+  function avancarFolha(f, passos = 1) {
+    const cfg = SEIVA_MIDIA[f.k] || SEIVA_MIDIA.livro;
+    f.prog = Math.min(f.total, f.prog + passos * cfg.por);
+    if (f.estado === 'semeado') f.estado = 'curso';
+    const r = registrar({ base: cfg.q * passos, ramo: 'cultura', k: 'progresso', r: f.t });
+    if (f.prog >= f.total) { const p = prensarFolha(f, 'prensado'); if (p) r.seiva += p.seiva; r.prensou = true; }
+    salvar(); return r;
+  }
+
+  /* ─── enxertos ────────────────────────────────────────────────────────── */
+  function enxertosDisponiveis() {
+    const pr = s.folhas.filter((f) => f.estado === 'prensado');
+    const feitos = new Set(s.enxertos.map((e) => e.nome));
+    const out = [];
+    DB.ENXERTOS_CURADOS.forEach((c) => {
+      if (feitos.has(c.nome)) return;
+      const a = pr.find((f) => f.t === c.a), b = pr.find((f) => f.t === c.b);
+      if (a && b) out.push({ ...c, curado: true, ta: a.t, tb: b.t });
+    });
+    const par = (x, y) => [x, y].sort().join('|');
+    const jaVistos = new Set(out.map((o) => par(o.ta, o.tb))
+      .concat(DB.ENXERTOS_CURADOS.map((c) => par(c.a, c.b)))
+      .concat(s.enxertos.map((e) => par(e.a, e.b))));
+    const min = temNo('cultura', 14) ? 1 : 2;
+    for (let i = 0; i < pr.length; i++) for (let j = i + 1; j < pr.length; j++) {
+      const com = (pr[i].tags || []).filter((t) => (pr[j].tags || []).includes(t));
+      if (com.length < min || jaVistos.has(par(pr[i].t, pr[j].t))) continue;
+      const nome = 'Ecos de ' + com[0].charAt(0).toUpperCase() + com[0].slice(1);
+      if (feitos.has(nome) || out.some((o) => o.nome === nome)) continue;
+      out.push({ nome, ramo: 'cultura', a: pr[i].t, b: pr[j].t, ta: pr[i].t, tb: pr[j].t,
+        txt: 'Duas obras que dividem o mesmo chão: ' + com.slice(0, 2).join(' e ') + '.' });
+    }
+    return out.slice(0, 3);
+  }
+  function enxertar(e) {
+    s.enxertos.push({ nome: e.nome, ramo: e.ramo, a: e.a, b: e.b, t: Date.now(), curado: !!e.curado });
+    const r = registrar({ base: e.curado ? 60 : 30, ramo: e.ramo, k: 'enxerto', r: e.nome });
+    revisar(); salvar();
+    return r;
+  }
+
+  /* ─── inclusões ───────────────────────────────────────────────────────── */
+  const CUSTO_ALIM = [400, 1600];
+  function alimentar(id) {
+    const inc = s.inclusoes[id];
+    if (!inc || inc.estagio >= 2) return false;
+    if (!gastar(CUSTO_ALIM[inc.estagio])) return false;
+    inc.estagio++;
+    const def = DB.INCLUSOES.find((i) => i.id === id);
+    if (def) s.invest[def.ramo] = (s.invest[def.ramo] || 0) + 0;   // alimentar não conta p/ Silhueta
+    revisar(); salvar();
+    return true;
+  }
+
+  /* ─── estatísticas derivadas (predicados de Fóssil/Inclusão) ──────────── */
+  function stats() {
+    const inc = Object.values(s.inclusoes);
+    return {
+      acoes: s.ledger.length,
+      ambar: ambar(), camada: camada(),
+      elosMax: s.elosMax, elos: s.elos,
+      folhasPrensadas: s.folhas.filter((f) => f.estado === 'prensado').length,
+      enxertos: s.enxertos.length,
+      inclusoesDespertas: inc.filter((i) => i.estagio >= 1).length,
+      inclusoesPlenas: inc.filter((i) => i.estagio >= 2).length,
+      silhuetaDefinida: !!s.silhueta,
+      podas: s.podas,
+      ...s.marcas,
+    };
+  }
+
+  /* revisar: desbloqueia Fósseis e Inclusões. Só adiciona — nunca remove. */
+  function revisar() {
+    const st = stats(), novos = { fosseis: [], inclusoes: [] };
+    DB.FOSSEIS.forEach((f) => {
+      if (s.fosseis.includes(f.id)) return;
+      try { if (f.p(st)) { s.fosseis.push(f.id); novos.fosseis.push(f); } } catch (e) {}
+    });
+    DB.INCLUSOES.forEach((i) => {
+      if (s.inclusoes[i.id]) return;
+      try { if (i.desbl(st)) { s.inclusoes[i.id] = { estagio: 0, alim: 0 }; novos.inclusoes.push(i); } } catch (e) {}
+    });
+    return novos;
+  }
+
+  /* ─── poda (New Game+) ────────────────────────────────────────────────── */
+  const podaLiberada = () => camada() >= 30 && s.marcas.aneisFechados >= 1;
+  function podar() {
+    if (!podaLiberada()) return false;
+    s.nos = []; s.invest = {}; s.gasto = ambar();   // zera o SALDO, não o Âmbar
+    s.podas++; s.epitetos.push(null);
+    s.silhueta = null; s.silhuetaCalc = 0;
+    revisar(); salvar();
+    return true;
+  }
+
+  /* ─── estação ─────────────────────────────────────────────────────────── */
+  function estacao() {
+    const m = new Date().getMonth();
+    return DB.ESTACOES.find((e) => e.meses.includes(m)) || DB.ESTACOES[0];
+  }
+  /* Sem servidor não existe número global real. Estimativa local honesta. */
+  function colheitaComum() {
+    const est = estacao(), ini = new Date(); ini.setMonth(est.meses[0], 1);
+    const dias = Math.max(1, Math.round((Date.now() - ini) / 864e5));
+    const minha = s.ledger.filter((e) => e.t >= ini.getTime()).reduce((a, e) => a + e.s, 0);
+    return { pc: Math.min(1, (dias / 90) * 0.72), minha, simulada: true, est };
+  }
+
+  window.AMBAR = {
+    get s() { return s; }, carregar, salvar, dia, diasEntre, semanaDe,
+    ambar, seiva, camada, progressoCamada, A,
+    registrar, gastar, calcular, multFoco, multCorrente, multEnxerto, multCerne,
+    marcarCiclo, avaliarCorrente, manutencaoDiaria,
+    vendavalHP, danoVendaval, somaSemanal,
+    custoNo, temNo, nosDisponiveis, quatroNos, comprarNo, calcularSilhueta,
+    prensarFolha, avancarFolha, SEIVA_MIDIA,
+    enxertosDisponiveis, enxertar, alimentar, CUSTO_ALIM,
+    stats, revisar, podaLiberada, podar, estacao, colheitaComum,
+    zerar() { localStorage.removeItem(CHAVE); s = inicial(); salvar(); },
+  };
+})();
+
+/* ÂMBAR · átomos de interface, arte procedural e feedback sensorial
+ * Orçamento: háptico + partícula em ~120 ms, número flutuante em 300 ms. */
+(function () {
+  'use strict';
+  const $ = (q, r = document) => r.querySelector(q);
+  const $$ = (q, r = document) => Array.from(r.querySelectorAll(q));
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* glifos de linha: nenhum emoji colorido no produto final */
+  const G = '<svg class="ug" viewBox="0 0 12 16" aria-hidden="true"><path d="M6 1C3 6 1 8.6 1 11a5 5 0 0 0 10 0C11 8.6 9 6 6 1z" fill="currentColor" opacity=".92"/></svg>';
+  const S = 'stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const ICO = {
+    hoje:     `<svg viewBox="0 0 24 24" ${S}><path d="M12 21v-8"/><path d="M12 13c0-4-3-6-6-6 0 4 3 6 6 6z"/><path d="M12 13c0-4 3-6 6-6 0 4-3 6-6 6z"/></svg>`,
+    arvore:   `<svg viewBox="0 0 24 24" ${S}><path d="M12 21v-7"/><path d="M12 14 7.5 9.5M12 14l4.5-4.5M12 9.5V6"/><path d="M5 10a7 7 0 0 1 14 0"/></svg>`,
+    herbario: `<svg viewBox="0 0 24 24" ${S}><path d="M4 20C4 11 11 4 20 4c0 9-7 16-16 16z"/><path d="M4 20 18 6"/></svg>`,
+    estufa:   `<svg viewBox="0 0 24 24" ${S}><path d="M3 21V9l9-6 9 6v12z"/><path d="M12 3v18M3 12h18"/></svg>`,
+    estrato:  `<svg viewBox="0 0 24 24" ${S}><path d="M5 7h14M3 12h18M6 17h12"/></svg>`,
+    mic:      `<svg viewBox="0 0 24 24" ${S}><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>`,
+    vendaval: `<svg viewBox="0 0 24 24" ${S}><path d="M4 7h13a3 3 0 1 0-3-3"/><path d="M3 12h16"/><path d="M6 17h10a3 3 0 1 1-3 3"/></svg>`,
+  };
+
+  function hash(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return Math.abs(h);
+  }
+
+  /* ─── capa procedural (offline, determinística) ────────────────────────── */
+  const MATIZ = { livro: 32, manga: 18, anime: 268, jogo: 292, filme: 210, serie: 196, album: 140 };
+  function capaSVG(titulo, k) {
+    const h = hash(titulo), id = 'g' + (h % 99999);
+    const mat = (MATIZ[k] ?? 32) + (h % 22) - 11;
+    const c1 = `hsl(${mat} 14% 24%)`, c2 = `hsl(${mat} 11% 12%)`;
+    const ini = titulo.replace(/[^A-Za-zÀ-ú ]/g, '').split(/\s+/).filter(Boolean)
+      .slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+    let linhas = '';
+    for (let i = 0; i < 7; i++) {
+      const y = 8 + i * 9 + (hash(titulo + i) % 4);
+      linhas += `<path d="M2 ${y} Q26 ${y - 4 + (i % 3) * 3} 50 ${y}" stroke="hsl(${mat} 18% 50%)" stroke-width=".5" fill="none" opacity=".22"/>`;
+    }
+    return `<svg viewBox="0 0 52 74" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+      <rect width="52" height="74" fill="url(#${id})"/>${linhas}
+      <rect x="1" y="1" width="50" height="72" fill="none" stroke="hsl(${mat} 16% 44%)" stroke-width=".7" opacity=".5"/>
+      <text x="26" y="43" text-anchor="middle" font-family="Georgia,serif" font-size="19"
+        fill="hsl(${mat} 20% 70%)" opacity=".85">${esc(ini || '·')}</text></svg>`;
+  }
+
+  /* ─── criaturas em resina ─────────────────────────────────────────────── */
+  const T = 'stroke="#3A2405" stroke-width="1.4" fill="none" stroke-linecap="round"';
+  const BICHOS = {
+    beetle: `<ellipse cx="20" cy="21" rx="9" ry="12" ${T}/><path d="M20 9v24" ${T}/><path d="M11 14 4 9M11 21H3M11 28 4 33M29 14l7-5M29 21h8M29 28l7 5" ${T}/><circle cx="20" cy="7" r="3" ${T}/>`,
+    moth: `<path d="M20 12v18" ${T}/><path d="M20 15C12 6 4 10 6 19s10 8 14 2" ${T}/><path d="M20 15c8-9 16-5 14 4s-10 8-14 2" ${T}/><path d="M18 11 14 5M22 11l4-6" ${T}/>`,
+    ant: `<circle cx="20" cy="10" r="4" ${T}/><circle cx="20" cy="19" r="3.5" ${T}/><ellipse cx="20" cy="30" rx="5.5" ry="7" ${T}/><path d="M17 8l-4-5M23 8l4-5M16 18l-8-3M24 18l8-3M16 22l-8 4M24 22l8 4" ${T}/>`,
+    bee: `<ellipse cx="20" cy="22" rx="7" ry="11" ${T}/><path d="M13 18h14M13 24h14" ${T}/><circle cx="20" cy="9" r="3.5" ${T}/><path d="M14 13C6 8 2 16 9 20M26 13c8-5 12 3 5 7" ${T}/>`,
+    butterfly: `<path d="M20 12v17" ${T}/><path d="M19 16C10 6 2 12 6 20s10 6 13 0M21 16c9-10 17-4 13 4s-10 6-13 0" ${T}/><path d="M18 11l-3-6M22 11l3-6" ${T}/>`,
+    spider: `<circle cx="20" cy="21" r="7" ${T}/><path d="M14 16 4 8M14 20H3M14 25 4 32M26 16l10-8M26 20h11M26 25l10 7" ${T}/><circle cx="20" cy="12" r="3" ${T}/>`,
+    seed: `<path d="M20 6c9 8 9 20 0 28C11 26 11 14 20 6z" ${T}/><path d="M20 10v20" ${T}/>`,
+    feather: `<path d="M20 4c8 10 6 24-2 32" ${T}/><path d="M19 12l-7 2M20 18l-8 3M21 24l-7 3M19 10l7 1M20 16l7 2M21 22l6 3" ${T}/>`,
+    dragonfly: `<path d="M20 6v28" ${T}/><path d="M18 14C8 10 2 16 8 19s8 0 10-2M22 14c10-4 16 2 10 5s-8 0-10-2" ${T}/><path d="M19 22c-8-2-12 4-7 6s7-2 8-3M21 22c8-2 12 4 7 6s-7-2-8-3" ${T}/>`,
+    firefly: `<circle cx="20" cy="26" r="8" fill="#FFE9A8" opacity=".55"/><ellipse cx="20" cy="22" rx="5" ry="8" ${T}/><path d="M15 16C8 11 4 18 10 20M25 16c7-5 11 2 5 4" ${T}/>`,
+    leaf: `<path d="M8 32C8 14 20 6 32 6c0 18-12 26-24 26z" ${T}/><path d="M8 32 32 6M14 26l4-9M20 22l4-9" ${T}/>`,
+    ring: `<circle cx="20" cy="20" r="14" ${T}/><circle cx="20" cy="20" r="9" ${T}/><circle cx="20" cy="20" r="4" ${T}/>`,
+  };
+  function bichoSVG(tipo) {
+    return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">${BICHOS[tipo] || BICHOS.seed}</svg>`;
+  }
+
+  const ESTAGIOS = ['dormente', 'desperta', 'plena'];
+  function blocoHTML(def, estagio, grande) {
+    const cls = ['bloco', ESTAGIOS[estagio] || 'dormente', grande ? 'grande' : ''].join(' ');
+    return `<div class="${cls}" data-inc="${def.id}"><div class="cubo">
+      <div class="f f1"></div><div class="f f2"></div><div class="f f3"></div>
+      <div class="f f4"></div><div class="f f5"></div><div class="f f6"></div>
+      <div class="bicho">${bichoSVG(def.bicho)}</div></div></div>`;
+  }
+
+  /* ─── feedback sensorial ──────────────────────────────────────────────── */
+  let ctxAudio = null;
+  function som(freq, dur = 0.28, tipo = 'sine', vol = 0.16) {
+    if (!AMBAR.s.prefs.som) return;
+    try {
+      ctxAudio = ctxAudio || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctxAudio.createOscillator(), g = ctxAudio.createGain();
+      o.type = tipo; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, ctxAudio.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + dur);
+      o.connect(g).connect(ctxAudio.destination); o.start(); o.stop(ctxAudio.currentTime + dur);
+    } catch (e) {}
+  }
+  const somDe = (id) => som(180 + (hash(id) % 9) * 55, 0.9, 'triangle', 0.2);
+  function haptic(p) { if (AMBAR.s.prefs.haptic && navigator.vibrate) try { navigator.vibrate(p); } catch (e) {} }
+
+  /* número flutuante + faíscas, ancorado no elemento tocado */
+  function ganho(el, q) {
+    const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2 - 20, top: innerHeight / 2, width: 40 };
+    const x = r.left + r.width / 2, y = r.top;
+    const n = document.createElement('div');
+    n.className = 'flut'; n.innerHTML = (typeof q === 'number' ? '+' + q : q) + G;
+    n.style.left = (x - 34) + 'px'; n.style.top = y + 'px';
+    document.body.appendChild(n); setTimeout(() => n.remove(), 1150);
+    for (let i = 0; i < 7; i++) {
+      const f = document.createElement('div'); f.className = 'faisca';
+      f.style.left = x + 'px'; f.style.top = (y + 10) + 'px';
+      f.style.setProperty('--dx', (Math.random() * 90 - 45) + 'px');
+      f.style.setProperty('--dy', (-25 - Math.random() * 55) + 'px');
+      f.style.animationDelay = (i * 18) + 'ms';
+      document.body.appendChild(f); setTimeout(() => f.remove(), 900);
+    }
+    haptic(18); som(520 + Math.min(typeof q === 'number' ? q : 40, 90) * 4, 0.16, 'sine', 0.1);
+  }
+
+  let torradaT = null;
+  function torrada(msg, ms = 3200) {
+    const el = $('#torrada'); el.textContent = msg; el.classList.add('on');
+    clearTimeout(torradaT); torradaT = setTimeout(() => el.classList.remove('on'), ms);
+  }
+
+  /* ─── celebração (fila: nunca duas seguidas) ──────────────────────────── */
+  let fila = [], mostrando = false, ultima = 0;
+  function celebrar(c) {
+    if (mostrando || Date.now() - ultima < 45000) { fila.push(c); return; }
+    mostrando = true; ultima = Date.now();
+    $('#cel-n').textContent = c.num || '';
+    $('#cel-t').textContent = c.titulo;
+    $('#cel-p').textContent = c.texto || '';
+    $('#celebra').classList.add('on');
+    haptic([0, 40, 60, 90]); som(196, 1.4, 'triangle', 0.22);
+    setTimeout(() => som(294, 1.6, 'sine', 0.14), 260);
+  }
+  function fecharCelebra() {
+    $('#celebra').classList.remove('on'); mostrando = false;
+  }
+  function escoarFila() {                       /* chamado na troca de tela */
+    if (!mostrando && fila.length) { ultima = 0; celebrar(fila.shift()); }
+  }
+
+  window.UI = { $, $$, esc, hash, G, ICO, capaSVG, bichoSVG, blocoHTML, ESTAGIOS,
+                som, somDe, haptic, ganho, torrada, celebrar, fecharCelebra, escoarFila };
+})();
+
+/* ÂMBAR · as cinco telas */
+(function () {
+  'use strict';
+  const { $, $$, esc, capaSVG, blocoHTML, G, ICO } = UI;
+  const DB = window.DB;
+  const A = window.AMBAR;
+
+  const NOME_K = { livro: 'livro', manga: 'mangá', anime: 'anime', jogo: 'jogo',
+                   filme: 'filme', serie: 'série', album: 'álbum' };
+  const UNID = { livro: 'pág', manga: 'cap', anime: 'ep', serie: 'ep', jogo: 'h', filme: 'min', album: 'escuta' };
+
+  /* ─── lâminas (folhas de baixo) ───────────────────────────────────────── */
+  function lamina(html, aoAbrir) {
+    const el = document.createElement('div');
+    el.className = 'lamina';
+    el.innerHTML = `<div class="corpo"><div class="puxador"></div>${html}</div>`;
+    el.addEventListener('click', (e) => { if (e.target === el) el.remove(); });
+    document.body.appendChild(el);
+    if (aoAbrir) aoAbrir(el);
+    return el;
+  }
+
+  /* ─── HOJE ────────────────────────────────────────────────────────────── */
+  /* escolhe UM Broto. Nunca devolve lista. Nunca pede prioridade ao usuário. */
+  function proximoBroto() {
+    const s = A.s, agora = Date.now();
+    const livre = (id) => !(s.adiados[id] > agora);
+
+    const pend = s.brotos.find((b) => !b.feito && livre(b.id));
+    if (pend) return pend;
+
+    for (const an of s.aneis) {
+      const et = an.etapas.find((e) => !e.ok);
+      if (et && livre('anel:' + an.id)) {
+        return { id: 'anel:' + an.id, txt: et.t, min: 5, ramo: an.ramo, dif: 1.5, anel: an.id, base: 40 };
+      }
+    }
+    const emCurso = s.folhas.filter((f) => f.estado === 'curso');
+    for (const f of emCurso) {
+      if (!livre('folha:' + f.id)) continue;
+      const u = UNID[f.k] || 'pág';
+      const passo = f.k === 'livro' ? '10 páginas' : f.k === 'jogo' ? '10 minutos' : '1 ' + u;
+      return { id: 'folha:' + f.id, txt: `avançar ${passo} de ${f.t}`, min: 4, ramo: 'cultura', dif: 1, folha: f.id };
+    }
+    const c = s.ciclos.find((x) => x.ultimo !== A.dia() && livre('ciclo:' + x.id));
+    if (c) return { id: 'ciclo:' + c.id, txt: c.nome, min: 3, ramo: c.ramo, dif: c.dif, ciclo: c.id };
+
+    const semear = s.folhas.find((f) => f.estado === 'semeado' && livre('folha:' + f.id));
+    if (semear) return { id: 'folha:' + semear.id, txt: 'começar ' + semear.t, min: 5, ramo: 'cultura', dif: 1, folha: semear.id };
+
+    return { id: 'vazio', txt: 'plantar uma coisa nova no Herbário', min: 2, ramo: 'cultura', dif: 1, vazio: true };
+  }
+
+  function hoje() {
+    const s = A.s, b = proximoBroto(), hp = A.vendavalHP();
+    const pcV = Math.min(1, s.vendaval.dano / hp);
+    const feitosHoje = s.ciclos.filter((c) => c.ultimo === A.dia()).length;
+    const elosVis = Math.max(5, Math.min(12, s.elos + 2));
+    let elos = '';
+    for (let i = 0; i < elosVis; i++) elos += `<span class="elo ${i < s.elos ? 'on' : ''}"></span>`;
+
+    $('#tela-hoje').innerHTML = `
+      <div class="agora">
+        <div class="halo"></div>
+        <div class="et">AGORA</div>
+        <div class="tt">${esc(b.txt)}</div>
+        <div class="mn">${b.min} min${b.anel ? ' · etapa de Anel' : ''}</div>
+        <button class="feito" id="btn-feito">FEITO</button>
+        <div class="escapes">
+          <button data-esc="outro">outro</button>
+          <button data-esc="depois">depois</button>
+        </div>
+      </div>
+
+      <div class="corrente ${s.congelado ? 'turvo' : ''}">
+        ${elos}<span class="lbl">${s.elos === 0 ? 'primeira corrente' : 'corrente de ' + s.elos + (s.elos === 1 ? ' elo' : ' elos')}${s.congelado ? ' · congelada' : ''}</span>
+      </div>
+
+      <div class="secao">Ciclos de hoje · ${feitosHoje}/${s.ciclos.length}</div>
+      <div class="pedras">
+        ${s.ciclos.map((c) => `<button class="pedra ${c.ultimo === A.dia() ? 'feita' : ''}" data-ciclo="${c.id}">
+            <span class="g">${c.glifo}</span><span>${esc(c.nome)}</span></button>`).join('')}
+      </div>
+      <div class="criar">
+        <button data-novo-ciclo="1">＋ Ciclo</button>
+        <button data-nova-tarefa="1">＋ uma coisa que preciso fazer</button>
+      </div>
+
+      <div class="secao">Vendaval da semana</div>
+      <div class="vendaval">
+        <span class="g">${ICO.vendaval}</span>
+        <div class="prog"><i style="width:${(pcV * 100).toFixed(0)}%"></i></div>
+        <span class="pc">${(pcV * 100).toFixed(0)}%</span>
+      </div>
+      ${s.vendaval.vencido ? '<p class="mn" style="color:var(--seiva);font-size:13px;margin-top:8px">a tempestade passou por cima e você ficou de pé.</p>' : ''}
+
+      <button class="selar" id="btn-selar">⧗ SELAR</button>
+      <p style="text-align:center;color:var(--texto3);font-size:11.5px;margin-top:-2px">
+        ${s.congelado ? 'sua corrente está congelada, não perdida.' : 'foco vira multiplicador. interrupção não zera nada.'}
+      </p>`;
+    $('#tela-hoje')._broto = b;
+  }
+
+  /* ─── ÁRVORE ──────────────────────────────────────────────────────────── */
+  function arvore() {
+    const s = A.s, sil = A.calcularSilhueta();
+    const nos = A.quatroNos();
+    const totalNos = s.nos.length;
+
+    $('#tela-arvore').innerHTML = `
+      <div class="silhueta">
+        <h2>${sil ? esc(sil.nome) : 'Bruma'}</h2>
+        <div class="sub">${sil ? esc(sil.chave.split('+').map((r) => DB.RAMOS.find((x) => x.id === r).nome).join(' · ')) : 'sem forma definida ainda'}</div>
+        ${sil ? `<div class="bon">${esc(sil.b)}</div>` : '<div class="bon" style="color:var(--texto3)">invista em dois Ramos e a copa toma forma</div>'}
+      </div>
+      <canvas id="arvore-canvas"></canvas>
+      <div class="secao">Prontos para abrir · ${A.seiva()}${G}</div>
+      <div class="nos">
+        ${nos.length ? nos.map((n) => `
+          <button class="no ${A.seiva() < n.custo ? 'bloq' : ''}" data-no="${n.ramo}:${n.i}">
+            <div class="nn">${esc(n.n)}</div>
+            <div class="nd">${esc(n.d)}</div>
+            <div class="nc">${n.custo}${G} · ${DB.RAMOS.find((r) => r.id === n.ramo).nome}</div>
+          </button>`).join('')
+          : '<p class="mn" style="grid-column:1/-1;color:var(--texto3)">nada aberto agora. volte com mais Seiva.</p>'}
+      </div>
+      <div class="secao">Ramos · ${totalNos} ${totalNos === 1 ? 'nó' : 'nós'}</div>
+      ${DB.RAMOS.map((r) => {
+        const q = s.nos.filter((n) => n.startsWith(r.id + ':')).length;
+        const inv = s.invest[r.id] || 0;
+        return `<div class="ramo-linha"><span class="g">${r.glifo}</span>
+          <span class="nm">${r.nome}</span>
+          <span class="qt">${q}/15 · ${inv}${G}${A.multEnxerto(r.id) > 1 ? ' · +' + Math.round((A.multEnxerto(r.id) - 1) * 100) + '%' : ''}</span></div>`;
+      }).join('')}
+      <div class="secao">Anéis</div>
+      ${s.aneis.map((an) => {
+        const ok = an.etapas.filter((e) => e.ok).length;
+        return `<div class="cartao" style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span class="serif" style="font-size:17px">${esc(an.nome)}</span>
+            <span style="font-size:12px;color:var(--texto3)">${ok}/${an.etapas.length}</span></div>
+          <div class="prog" style="margin-top:10px"><i style="width:${(ok / an.etapas.length * 100).toFixed(0)}%"></i></div>
+        </div>`;
+      }).join('')}
+      ${A.podaLiberada() ? '<button class="acao primaria" id="btn-poda" style="margin-top:14px">✂ PODAR</button>' : ''}`;
+
+    desenharArvore();
+  }
+
+  function desenharArvore() {
+    const cv = $('#arvore-canvas'); if (!cv) return;
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    const w = cv.clientWidth, h = 200;
+    cv.width = w * dpr; cv.height = h * dpr;
+    const g = cv.getContext('2d'); g.scale(dpr, dpr);
+    g.clearRect(0, 0, w, h);
+    const s = A.s;
+    const total = Object.values(s.invest).reduce((a, b) => a + b, 0);
+    const tronco = 6 + Math.min(16, s.nos.length * 0.9);
+    const cor = getComputedStyle(document.documentElement).getPropertyValue('--acento').trim() || '#E8A33D';
+
+    // tronco + anéis dos Anéis fechados
+    g.strokeStyle = '#4A3B2A'; g.lineCap = 'round';
+    g.lineWidth = tronco; g.beginPath(); g.moveTo(w / 2, h - 4); g.lineTo(w / 2, h - 62); g.stroke();
+    const aneis = s.marcas.aneisFechados;
+    for (let i = 0; i < aneis; i++) {
+      g.strokeStyle = cor; g.globalAlpha = .5; g.lineWidth = 1.5;
+      g.beginPath(); g.arc(w / 2, h - 14 - i * 8, tronco / 2 + 3, Math.PI, 0); g.stroke();
+      g.globalAlpha = 1;
+    }
+
+    // um galho por Ramo, espessura pelo investimento
+    DB.RAMOS.forEach((r, i) => {
+      const inv = s.invest[r.id] || 0;
+      const q = s.nos.filter((n) => n.startsWith(r.id + ':')).length;
+      const ang = -Math.PI / 2 + (i - (DB.RAMOS.length - 1) / 2) * 0.36;
+      const len = 46 + Math.min(84, q * 17 + (total ? inv / total * 44 : 0));
+      const x0 = w / 2, y0 = h - 62;
+      galho(g, x0, y0, ang, len, 2 + Math.min(7, q * .9), q, cor, '#5A4632');
+    });
+  }
+  function galho(g, x, y, ang, len, esp, prof, cor, corRamo) {
+    const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+    g.strokeStyle = corRamo; g.globalAlpha = .8; g.lineWidth = esp;
+    g.beginPath(); g.moveTo(x, y);
+    g.quadraticCurveTo(x + Math.cos(ang - .2) * len * .6, y + Math.sin(ang - .2) * len * .6, x2, y2);
+    g.stroke(); g.globalAlpha = 1;
+    if (prof > 0) {
+      g.fillStyle = cor;
+      for (let k = 0; k < Math.min(prof, 5); k++) {
+        const t = (k + 1) / (Math.min(prof, 5) + 1);
+        g.beginPath(); g.arc(x + (x2 - x) * t, y + (y2 - y) * t, 2.4, 0, 7); g.fill();
+      }
+      if (prof >= 2) {
+        galho(g, x2, y2, ang - .45, len * .52, esp * .6, prof - 2, cor, corRamo);
+        galho(g, x2, y2, ang + .45, len * .52, esp * .6, prof - 2, cor, corRamo);
+      }
+    }
+  }
+
+  /* ─── HERBÁRIO ────────────────────────────────────────────────────────── */
+  const FILTROS = [['curso', 'Em curso'], ['semeado', 'Semeado'], ['prensado', 'Prensado'], ['deixado', 'Deixado ir']];
+  let filtro = 'curso';
+
+  function herbario() {
+    const s = A.s;
+    const enx = A.enxertosDisponiveis();
+    const lista = s.folhas.filter((f) => f.estado === filtro);
+
+    $('#tela-herbario').innerHTML = `
+      <div class="busca">
+        <input id="busca" type="search" inputmode="search" placeholder="fala ou escreve o nome" autocomplete="off">
+        <button class="voz" id="btn-voz" title="ditar" aria-label="ditar">${ICO.mic}</button>
+      </div>
+      <div class="resultados" id="resultados"></div>
+
+      ${enx.length ? `
+        <div class="secao">Enxerto disponível</div>
+        ${enx.map((e, i) => `<div class="enxerto-banner">
+          <div class="par">❧ ${esc(e.ta)} &nbsp;✛&nbsp; ❧ ${esc(e.tb)}</div>
+          <div class="nm">${esc(e.nome)}</div>
+          <div class="tx">${esc(e.txt)}</div>
+          <button data-enx="${i}">ENXERTAR · +${e.curado ? 4 : 2}% em ${DB.RAMOS.find((r) => r.id === e.ramo).nome}</button>
+        </div>`).join('')}` : ''}
+
+      <div class="secao">Herbário · ${s.folhas.length} ${s.folhas.length === 1 ? 'folha' : 'folhas'}</div>
+      <div class="chips">
+        ${FILTROS.map(([k, n]) => `<button class="chip" data-filtro="${k}" aria-pressed="${filtro === k}">${n} ${s.folhas.filter((f) => f.estado === k).length || ''}</button>`).join('')}
+      </div>
+      ${lista.length ? lista.map((f) => folhaHTML(f)).join('')
+        : `<p class="mn" style="color:var(--texto3);padding:16px 0">nada aqui. busque uma obra acima — dois toques e ela existe.</p>
+           <div class="secao">Sugestões do catálogo</div>
+           ${DB.CATALOGO.slice(0, 4).map((c) => resHTML(c, 'catálogo')).join('')}`}`;
+    $('#tela-herbario')._enx = enx;
+  }
+
+  function folhaHTML(f) {
+    const pc = f.total ? Math.min(1, f.prog / f.total) : 0;
+    const u = UNID[f.k] || '';
+    return `<div class="folha" data-folha="${f.id}">
+      <div class="capa">${capaSVG(f.t, f.k)}</div>
+      <div class="info">
+        <div class="tt">${esc(f.t)}</div>
+        <div class="mt">${f.estado === 'prensado' ? 'prensado' : `${f.prog}${u ? ' ' + u : ''} / ${f.total}${u ? ' ' + u : ''}`} · ${NOME_K[f.k] || f.k}</div>
+        <div class="prog"><i style="width:${(pc * 100).toFixed(0)}%"></i></div>
+      </div>
+      ${f.estado === 'prensado' || f.estado === 'deixado' ? ''
+        : `<button class="mais" data-avancar="${f.id}" title="avançar">＋</button>`}
+    </div>`;
+  }
+  function resHTML(c, fonte) {
+    return `<button class="res" data-add="${esc(c.t)}" data-fonte="${esc(fonte || '')}">
+      <div class="capa">${capaSVG(c.t, c.k)}</div>
+      <div class="info">
+        <div class="tt">${esc(c.t)}</div>
+        <div class="mt">${NOME_K[c.k] || c.k} · ${c.y || '—'} · ${c.total} ${UNID[c.k] || ''}${c.nota ? ' · ★ ' + c.nota : ''}</div>
+        <div class="fonte">${esc(fonte || '')}</div>
+      </div></button>`;
+  }
+
+  /* ─── ESTUFA ──────────────────────────────────────────────────────────── */
+  function estufa() {
+    const s = A.s;
+    const minhas = DB.INCLUSOES.filter((i) => s.inclusoes[i.id]);
+    const vagas = Math.max(8, Math.ceil(minhas.length / 4) * 4);
+    const est = A.estacao();
+    let html = '';
+    for (let p = 0; p < vagas / 4; p++) {
+      html += '<div class="prateleira">';
+      for (let k = 0; k < 4; k++) {
+        const inc = minhas[p * 4 + k];
+        html += inc
+          ? `<div class="vaga" data-abrir-inc="${inc.id}">${blocoHTML(inc, s.inclusoes[inc.id].estagio)}<div class="lb">${esc(inc.nome)}</div></div>`
+          : '<div class="vaga vazia"><div class="bloco" style="opacity:.12"><div class="cubo"><div class="f f1"></div><div class="f f3"></div></div></div></div>';
+      }
+      html += '</div>';
+    }
+    const proximas = DB.INCLUSOES.filter((i) => !s.inclusoes[i.id]).slice(0, 3);
+
+    $('#tela-estufa').innerHTML = `
+      <div class="estufa"><div class="vidro"></div>${html}</div>
+      <p style="text-align:center;color:var(--texto3);font-size:12px;margin-top:14px">
+        ${est.nome} · ${est.tema}</p>
+      ${proximas.length ? `<div class="secao">Ainda em resina</div>
+        ${proximas.map((i) => `<div class="ramo-linha"><span class="g">·</span>
+          <span class="nm" style="color:var(--texto3)">${esc(i.nome)}</span>
+          <span class="qt">${esc(i.dica)}</span></div>`).join('')}` : ''}`;
+  }
+
+  function abrirInclusao(id) {
+    const def = DB.INCLUSOES.find((i) => i.id === id), st = A.s.inclusoes[id];
+    if (!def || !st) return;
+    const custo = A.CUSTO_ALIM[st.estagio];
+    const nomes = ['Dormente', 'Desperta', 'Plena'];
+    lamina(`
+      <div style="text-align:center;padding:10px 0 4px">${blocoHTML(def, st.estagio, true)}</div>
+      <h3 style="text-align:center">${esc(def.nome)}</h3>
+      <p class="sub" style="text-align:center">${esc(def.lore)}</p>
+      <div class="ramo-linha"><span class="g">${DB.RAMOS.find((r) => r.id === def.ramo).glifo}</span>
+        <span class="nm">${nomes[st.estagio]}</span>
+        <span class="qt">afinidade ${DB.RAMOS.find((r) => r.id === def.ramo).nome}</span></div>
+      <div class="acoes">
+        ${st.estagio < 2
+          ? `<button class="acao ${A.seiva() >= custo ? 'primaria' : ''}" data-alimentar="${id}">
+               ALIMENTAR · ${custo}${G}</button>`
+          : '<div class="acao" style="text-align:center;color:var(--seiva)">plena. ela já tem luz própria.</div>'}
+      </div>
+      <p style="color:var(--texto3);font-size:11.5px;margin-top:12px">
+        Seiva investida aqui não vira nó de Ramo. É uma escolha, não um erro.</p>`,
+      (el) => { UI.somDe(id); girarManual(el); });
+  }
+  /* arraste para girar o bloco grande */
+  function girarManual(escopo) {
+    const bloco = escopo.querySelector('.bloco.grande'); if (!bloco) return;
+    const cubo = bloco.querySelector('.cubo');
+    let arrastando = false, x0 = 0, y0 = 0, rx = 12, ry = 28;
+    const set = () => { cubo.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`; };
+    bloco.addEventListener('pointerdown', (e) => { arrastando = true; bloco.classList.add('manual'); x0 = e.clientX; y0 = e.clientY; set(); });
+    window.addEventListener('pointermove', (e) => {
+      if (!arrastando) return;
+      ry += (e.clientX - x0) * .6; rx -= (e.clientY - y0) * .4;
+      rx = Math.max(-70, Math.min(70, rx)); x0 = e.clientX; y0 = e.clientY; set();
+    });
+    window.addEventListener('pointerup', () => { arrastando = false; });
+  }
+
+  /* ─── ESTRATO ─────────────────────────────────────────────────────────── */
+  const RAR = { casca: 'Casca', cerne: 'Cerne', ambar: 'Âmbar', prisma: 'Prisma' };
+  let filtroR = 'todos';
+
+  function estrato() {
+    const s = A.s, st = A.stats(), col = A.colheitaComum();
+    // camadas por mês, a partir do ledger
+    const meses = {};
+    s.ledger.forEach((e) => { const m = new Date(e.t).toISOString().slice(0, 7); meses[m] = (meses[m] || 0) + e.s; });
+    const chaves = Object.keys(meses).sort().reverse();
+    const maxM = Math.max(1, ...Object.values(meses));
+
+    const fosseis = DB.FOSSEIS.filter((f) => filtroR === 'todos' || f.r === filtroR);
+    const ganhos = fosseis.filter((f) => s.fosseis.includes(f.id));
+    const faltam = fosseis.filter((f) => !s.fosseis.includes(f.id));
+
+    $('#tela-estrato').innerHTML = `
+      <div class="secao">Estação de ${col.est.nome}</div>
+      <div class="cartao">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+          <span class="serif" style="font-size:16px">Colheita Comum</span>
+          <span style="font-size:12px;color:var(--texto3)">estimativa local</span>
+        </div>
+        <div class="prog"><i style="width:${(col.pc * 100).toFixed(0)}%"></i></div>
+        <p style="font-size:12px;color:var(--texto2);margin:10px 0 0">
+          sua contribuição na estação: ${col.minha}${G} · o marco 1 é liberado no fim, cumprido ou não.</p>
+      </div>
+
+      <div class="secao">Seu estrato</div>
+      <div class="estrato">
+        ${chaves.length ? chaves.map((m) => {
+          const alt = 16 + Math.round((meses[m] / maxM) * 34);
+          const [ano, mes] = m.split('-');
+          return `<div class="camada-linha" style="height:${alt}px">
+            <span class="lb">${mes}/${ano.slice(2)}</span>
+            <div class="faixa" style="background:linear-gradient(90deg,var(--ambar) ${(meses[m] / maxM * 100).toFixed(0)}%, transparent 0)"></div>
+            <span class="lb" style="color:var(--seiva)">${meses[m]}${G}</span></div>`;
+        }).join('') : '<div class="camada-linha" style="height:44px"><span class="lb">sem camadas ainda</span></div>'}
+      </div>
+
+      <div class="secao">Epítetos</div>
+      <div class="epitetos">
+        ${s.epitetos.map((e, i) => {
+          const def = DB.EPITETOS.find((x) => x.id === e);
+          return `<button class="slot ${def ? 'on' : ''}" data-epiteto="${i}">${def ? esc(def.nome) : 'vazio'}</button>`;
+        }).join('')}
+      </div>
+
+      <div class="secao">Fósseis · ${s.fosseis.length}/${DB.FOSSEIS.length}</div>
+      <div class="chips">
+        <button class="chip" data-rar="todos" aria-pressed="${filtroR === 'todos'}">Todos</button>
+        ${Object.entries(RAR).reverse().map(([k, n]) => `<button class="chip" data-rar="${k}" aria-pressed="${filtroR === k}">${n}</button>`).join('')}
+      </div>
+      ${ganhos.map((f) => fossilHTML(f, true)).join('')}
+      ${faltam.map((f) => fossilHTML(f, false, st)).join('')}`;
+  }
+
+  function fossilHTML(f, ganho, st) {
+    let nome = f.nome, dd = f.d;
+    let oc = false;
+    if (!ganho && f.oculto) { oc = true; nome = '———'; dd = f.meia && meioCaminho(f, st) ? f.meia : '???'; }
+    return `<div class="fossil ${ganho ? '' : 'travado'} ${oc ? 'oculto' : ''}">
+      <span class="g">${ganho ? '◆' : '·'}</span>
+      <div class="info"><div class="nm">${esc(nome)}</div><div class="dd">${esc(dd)}</div></div>
+      <span class="r r-${f.r}">${RAR[f.r]}</span></div>`;
+  }
+  /* dica só aparece com metade do critério cumprido */
+  function meioCaminho(f, st) {
+    if (!st) return false;
+    const m = { o1: st.selagens >= 3, o2: st.folhasPrensadas >= 5, o3: st.deixadas >= 1,
+                o4: st.lampoAtendidos >= 5, o5: st.selagens >= 3 };
+    return !!m[f.id];
+  }
+
+  window.TELAS = { hoje, arvore, herbario, estufa, estrato, lamina, abrirInclusao,
+                   folhaHTML, resHTML, desenharArvore, proximoBroto,
+                   get filtro() { return filtro; }, set filtro(v) { filtro = v; },
+                   set filtroR(v) { filtroR = v; }, UNID, NOME_K };
+})();
+
+/* ÂMBAR · boot, rotas, eventos, foco e novidade */
+(function () {
+  'use strict';
+  const { $, $$, esc, G } = UI;
+  const A = window.AMBAR, DB = window.DB, T = window.TELAS;
+
+  /* ─── topo e rotas ────────────────────────────────────────────────────── */
+  let telaAtual = 'hoje';
+  const RENDER = { hoje: T.hoje, arvore: T.arvore, herbario: T.herbario, estufa: T.estufa, estrato: T.estrato };
+
+  function topo() {
+    const p = A.progressoCamada();
+    $('#t-camada').textContent = p.n;
+    $('#t-barra').style.width = (p.pc * 100).toFixed(1) + '%';
+    $('#t-saldo').innerHTML = A.seiva() + G;
+  }
+  function pintar() { RENDER[telaAtual](); topo(); }
+  function ir(t) {
+    telaAtual = t;
+    $$('#nav button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.t === t)));
+    $$('.tela').forEach((s) => s.classList.toggle('on', s.id === 'tela-' + t));
+    pintar();
+    scrollTo({ top: 0, behavior: 'smooth' });
+    UI.escoarFila();                     /* celebração guardada entra agora */
+  }
+
+  /* ─── recompensa de uma ação ──────────────────────────────────────────── */
+  function premiar(el, r, contexto) {
+    if (!r) return;
+    const antes = contexto && contexto.camadaAntes;
+    UI.ganho(el, r.seiva);
+    const v = A.danoVendaval(r.seiva);
+    if (v) setTimeout(() => UI.celebrar({ num: '≋', titulo: 'Vendaval vencido',
+      texto: 'a tempestade passou por cima e você ficou de pé. +' + v.seiva + ' de Seiva.' }), 700);
+    (r.novos ? r.novos.fosseis : []).forEach((f, i) => setTimeout(() =>
+      UI.torrada('◆ Fóssil de ' + f.r + ': ' + f.nome), 900 + i * 400));
+    (r.novos ? r.novos.inclusoes : []).forEach((inc, i) => setTimeout(() =>
+      UI.celebrar({ num: '', titulo: inc.nome, texto: inc.lore + ' · está na sua Estufa, dormente.' }), 1100 + i * 500));
+    const depois = A.camada();
+    if (antes && depois > antes) {
+      setTimeout(() => UI.celebrar({ num: depois, titulo: 'Camada ' + depois,
+        texto: 'a resina endureceu. essa camada não sai mais.' }), 500);
+    }
+    topo();
+  }
+
+  /* ─── HOJE: concluir o Broto ──────────────────────────────────────────── */
+  function feito(el) {
+    const b = $('#tela-hoje')._broto, s = A.s, camadaAntes = A.camada();
+    if (b.vazio) { ir('herbario'); setTimeout(() => $('#busca') && $('#busca').focus(), 350); return; }
+    let r = null;
+
+    if (b.ciclo) {
+      r = A.marcarCiclo(s.ciclos.find((c) => c.id === b.ciclo));
+    } else if (b.folha) {
+      const f = s.folhas.find((x) => x.id === b.folha);
+      if (f) { r = A.avancarFolha(f, 1); if (r.prensou) UI.torrada('❧ ' + f.t + ' foi prensado no Herbário.'); }
+    } else if (b.anel) {
+      const an = s.aneis.find((x) => x.id === b.anel);
+      const et = an.etapas.find((e) => !e.ok);
+      if (et) {
+        et.ok = true;
+        r = A.registrar({ base: 40, dif: 1.5, ramo: an.ramo, k: 'anel', r: an.nome });
+        if (an.etapas.every((e) => e.ok)) {
+          s.marcas.aneisFechados++;
+          A.revisar();
+          setTimeout(() => UI.celebrar({ num: '◎', titulo: 'Anel fechado',
+            texto: an.nome + ' · um anel de crescimento foi gravado no tronco, com data.' }), 600);
+        }
+        A.salvar();
+      }
+    } else {
+      const idx = s.brotos.findIndex((x) => x.id === b.id);
+      if (idx >= 0) s.brotos[idx].feito = true;
+      s.marcas.brotosFeitos++;
+      r = A.registrar({ base: b.base || 10, dif: b.dif || 1, ramo: b.ramo, k: 'broto', r: b.txt, evento: b.evento || 1 });
+    }
+    A.salvar();
+    premiar(el, r, { camadaAntes });
+    T.hoje();
+  }
+
+  /* ─── selagem ─────────────────────────────────────────────────────────── */
+  const sel = { on: false, ini: 0, meta: 25, interrup: 0, timer: null, silencio: false };
+  function abrirSelagem() {
+    T.lamina(`<h3>Selagem</h3><p class="sub">tempo como matéria. o frasco enche enquanto você fica.</p>
+      <div class="chips">
+        ${[15, 25, 40].map((m) => `<button class="chip" data-sel="${m}">${m} min</button>`).join('')}
+        <button class="chip" data-sel="0">sem meta</button>
+      </div>
+      <p style="color:var(--texto3);font-size:12px;margin-top:14px">
+        interromper não zera nada: 40 min com 5 interrupções ainda vale mais que 15 min perfeitos.</p>`);
+  }
+  function comecarSelagem(meta) {
+    sel.on = true; sel.ini = Date.now(); sel.meta = meta || 40; sel.interrup = 0; sel.silencio = false;
+    $('#selagem').classList.add('on');
+    tickSelagem();
+    sel.timer = setInterval(tickSelagem, 1000);
+    UI.haptic(30);
+  }
+  function tickSelagem() {
+    const seg = Math.floor((Date.now() - sel.ini) / 1000), min = seg / 60;
+    const mm = String(Math.floor(seg / 60)).padStart(2, '0'), ss = String(seg % 60).padStart(2, '0');
+    $('#sel-t').textContent = mm + ':' + ss;
+    $('#sel-liq').style.height = Math.min(100, (min / sel.meta) * 100).toFixed(1) + '%';
+    const F = A.multFoco(min, sel.interrup);
+    $('#sel-mult').textContent = '×' + F.toFixed(2).replace('.', ',');
+    $('#sel-m').textContent = sel.interrup
+      ? sel.interrup + (sel.interrup === 1 ? ' saída' : ' saídas') + ' · a resina ficou turva, não vazia'
+      : 'a resina escorre enquanto você fica';
+    if (min >= 12 && !sel.silencio) {
+      sel.silencio = true; document.body.classList.add('silencio');
+      UI.torrada('silêncio. o resto do app saiu da frente.', 2600);
+    }
+  }
+  function encerrarSelagem() {
+    if (!sel.on) return;
+    clearInterval(sel.timer); sel.on = false;
+    document.body.classList.remove('silencio');
+    $('#selagem').classList.remove('on');
+    const min = (Date.now() - sel.ini) / 60000;
+    if (min < 1) { UI.torrada('menos de um minuto não endurece. sem problema.'); return; }
+    const F = A.multFoco(min, sel.interrup), h = new Date().getHours();
+    const s = A.s, camadaAntes = A.camada();
+    s.marcas.selagens++;
+    if (min >= 40 && sel.interrup === 0) s.marcas.selagemPerfeita = true;
+    if (h < 6 && sel.interrup === 0) s.marcas.selagemMadrugada = true;
+    const r = A.registrar({ base: Math.round(min * 1.2), ramo: 'mente', foco: F, k: 'selagem',
+      r: Math.round(min) + ' min selados' });
+    premiar($('#btn-selar'), r, { camadaAntes });
+    UI.torrada(`você ficou ${Math.round(min)} min. ficou bonito. ×${F.toFixed(2).replace('.', ',')}`, 4000);
+    pintar();
+  }
+
+  /* ─── pirilampo ───────────────────────────────────────────────────────── */
+  function talvezLampo() {
+    const s = A.s;
+    if (sel.on || Date.now() - s.lampo.ultimo < 2 * 36e5) return;
+    if (Math.random() > 0.06) return;
+    const el = $('#lampo');
+    el.style.left = (12 + Math.random() * 66) + 'vw';
+    el.style.top = (22 + Math.random() * 48) + 'vh';
+    el.classList.add('on');
+    UI.som(880, .5, 'sine', .07);
+    setTimeout(() => el.classList.remove('on'), 40000);
+  }
+  const OFERTAS = ['missao', 'cor', 'lembranca'];
+  function atenderLampo() {
+    const s = A.s;
+    $('#lampo').classList.remove('on');
+    s.lampo.ultimo = Date.now(); s.marcas.lampoAtendidos++;
+    const tipo = OFERTAS[Math.floor(Math.random() * OFERTAS.length)];
+    if (tipo === 'missao') {
+      const frag = DB.FRAGMENTOS[Math.floor(Math.random() * DB.FRAGMENTOS.length)];
+      const alvo = s.folhas.find((f) => f.estado === 'curso');
+      const txt = frag.m.replace('%s', alvo ? alvo.t : 'a primeira coisa que aparecer');
+      s.brotos.unshift({ id: 'lampo:' + Date.now(), txt, min: frag.min, ramo: 'cultura', dif: 1, evento: 2, base: 10 });
+      T.lamina(`<h3>Missão secreta</h3><p class="sub">expira em 40 minutos. rende o dobro.</p>
+        <div class="acao" style="text-align:center"><b>${esc(txt)}</b><br><span style="font-size:12px;color:var(--texto3)">${frag.min} min · Seiva ×2</span></div>
+        <div class="acoes"><button class="acao primaria" data-fechar="1">ACEITAR</button></div>`);
+    } else if (tipo === 'cor') {
+      const h = [12, 48, 96, 168, 276, 320][Math.floor(Math.random() * 6)];
+      document.documentElement.style.setProperty('--acento', `hsl(${h} 62% 56%)`);
+      s.prefs.acento = h; s.prefs.acentoAte = Date.now() + 864e5;
+      T.lamina(`<h3>Sopro de cor</h3><p class="sub">a paleta muda por 24 horas. só porque hoje é hoje.</p>
+        <div class="acoes"><button class="acao primaria" data-fechar="1">BONITO</button></div>`);
+      T.desenharArvore();
+    } else {
+      const fs = A.s.ledger.slice(0, 40).filter((e) => e.r);
+      const e = fs.length ? fs[Math.floor(Math.random() * fs.length)] : null;
+      const quando = e ? new Date(e.t).toLocaleDateString('pt-BR') : null;
+      T.lamina(`<h3>Uma lembrança</h3>
+        <p class="sub">${e ? `em ${quando} você fez isto: <b style="color:var(--seiva)">${esc(e.r)}</b>. ainda conta.`
+          : 'você abriu este app pela primeira vez hoje. isso também conta.'}</p>
+        <div class="acoes"><button class="acao primaria" data-fechar="1">ESTAVA ESQUECIDO</button></div>`);
+    }
+    A.revisar(); A.salvar(); pintar();
+  }
+
+  /* ─── busca de obras (API com queda para o catálogo local) ────────────── */
+  let buscaT = null;
+  function buscar(q) {
+    clearTimeout(buscaT);
+    if (!q || q.length < 2) { $('#resultados').innerHTML = ''; return; }
+    buscaT = setTimeout(async () => {
+      const local = DB.CATALOGO
+        .filter((c) => c.t.toLowerCase().includes(q.toLowerCase()) || (c.a || '').toLowerCase().includes(q.toLowerCase()))
+        .slice(0, 3);
+      render(local.map((c) => [c, 'catálogo local']));
+      const remoto = await buscarAPI(q).catch(() => []);
+      if (remoto.length) render(remoto.concat(local.map((c) => [c, 'catálogo local'])).slice(0, 3));
+      else if (!local.length) render([]);
+    }, 250);
+
+    function render(pares) {
+      const box = $('#resultados'); if (!box) return;
+      box.innerHTML = pares.length
+        ? pares.map(([c, fonte]) => T.resHTML(c, fonte)).join('')
+        : `<button class="res" data-manual="${esc(q)}"><div class="capa">${UI.capaSVG(q, 'livro')}</div>
+             <div class="info"><div class="tt">${esc(q)}</div>
+             <div class="mt">nenhuma API achou. criar com este nome?</div>
+             <div class="fonte">manual · 2 campos</div></div></button>`;
+      box._pares = pares;
+    }
+  }
+
+  async function buscarAPI(q) {
+    if (!navigator.onLine) return [];
+    const out = [];
+    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 1200);
+    try {
+      const r = await fetch('https://graphql.anilist.co', {
+        method: 'POST', signal: ctrl.signal, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `query($q:String){Page(perPage:2){media(search:$q,sort:POPULARITY_DESC){
+            title{romaji english} type format episodes chapters averageScore startDate{year} genres}}}`,
+          variables: { q },
+        }),
+      });
+      const j = await r.json();
+      (j.data && j.data.Page.media || []).forEach((m) => {
+        const t = m.title.english || m.title.romaji;
+        const manga = m.type === 'MANGA';
+        out.push([{ t, k: manga ? 'manga' : 'anime', y: m.startDate && m.startDate.year,
+          total: (manga ? m.chapters : m.episodes) || (manga ? 100 : 12),
+          nota: m.averageScore ? (m.averageScore / 10).toFixed(1) : null,
+          tags: (m.genres || []).map((g) => g.toLowerCase()) }, 'AniList']);
+      });
+    } catch (e) { /* offline ou CORS: o catálogo local assume */ }
+    clearTimeout(to);
+    if (out.length >= 2) return out;
+    try {
+      const c2 = new AbortController(); setTimeout(() => c2.abort(), 1200);
+      const r = await fetch('https://openlibrary.org/search.json?limit=2&fields=title,author_name,first_publish_year,number_of_pages_median,subject&q='
+        + encodeURIComponent(q), { signal: c2.signal });
+      const j = await r.json();
+      (j.docs || []).forEach((d) => out.push([{ t: d.title, a: (d.author_name || [])[0], k: 'livro',
+        y: d.first_publish_year, total: d.number_of_pages_median || 300,
+        tags: (d.subject || []).slice(0, 6).map((x) => String(x).toLowerCase()) }, 'Open Library']));
+    } catch (e) {}
+    return out;
+  }
+
+  function adicionarFolha(c, fonte) {
+    const s = A.s;
+    if (s.folhas.some((f) => f.t === c.t)) { UI.torrada('já está no Herbário.'); return; }
+    const camadaAntes = A.camada();
+    const f = { id: 'f' + Date.now(), t: c.t, k: c.k || 'livro', total: c.total || 100,
+      prog: 0, estado: 'curso', tags: c.tags || [], nota: c.nota || null, fonte: fonte || 'local' };
+    s.folhas.push(f);
+    const r = A.registrar({ base: 5, ramo: 'cultura', k: 'folha', r: 'plantou ' + f.t });
+    A.salvar();
+    UI.torrada('❧ ' + f.t + ' entrou no Herbário. estado: em curso.');
+    premiar($('#busca'), r, { camadaAntes });
+    const b = $('#busca'); if (b) b.value = '';
+    T.herbario();
+  }
+
+  /* ─── lâminas de ação ─────────────────────────────────────────────────── */
+  function abrirFolha(id) {
+    const f = A.s.folhas.find((x) => x.id === id); if (!f) return;
+    const u = T.UNID[f.k] || '';
+    T.lamina(`<h3>${esc(f.t)}</h3>
+      <p class="sub">${T.NOME_K[f.k] || f.k} · ${f.prog}/${f.total} ${u} · ${esc((f.tags || []).slice(0, 3).join(' · '))}</p>
+      <div class="prog" style="margin-bottom:16px"><i style="width:${(f.prog / f.total * 100).toFixed(0)}%"></i></div>
+      <div class="acoes">
+        <button class="acao primaria" data-avancar="${f.id}">＋ AVANÇAR</button>
+        <button class="acao" data-estado="prensado:${f.id}">prensar · concluída <b>+${(A.SEIVA_MIDIA[f.k] || A.SEIVA_MIDIA.livro).fim}${G}</b></button>
+        <button class="acao" data-estado="deixado:${f.id}">deixar ir · não é pra agora <b>+10${G}</b></button>
+        <button class="acao" data-estado="semeado:${f.id}">guardar como semeado</button>
+      </div>
+      <p style="color:var(--texto3);font-size:11.5px;margin-top:12px">
+        "deixar ir" rende Seiva. parar consciente também é uma decisão executiva.</p>`);
+  }
+
+  function abrirNovoCiclo() {
+    T.lamina(`<h3>Novo Ciclo</h3><p class="sub">um hábito. dois toques: nome e Ramo.</p>
+      <div class="busca"><input id="nc-nome" placeholder="ex: 20 minutos de violão"></div>
+      <div class="chips" id="nc-ramos">
+        ${DB.RAMOS.map((r, i) => `<button class="chip" data-ncr="${r.id}" aria-pressed="${i === 0}">${r.glifo} ${r.nome}</button>`).join('')}
+      </div>
+      <div class="chips" id="nc-dif">
+        ${[['1', 'Leve'], ['1.5', 'Média'], ['2.2', 'Pesada']].map(([v, n], i) =>
+          `<button class="chip" data-ncd="${v}" aria-pressed="${i === 0}">${n}</button>`).join('')}
+      </div>
+      <div class="acoes"><button class="acao primaria" id="nc-ok">CRIAR</button></div>`,
+      (el) => setTimeout(() => el.querySelector('#nc-nome').focus(), 250));
+  }
+
+  function abrirNovaTarefa() {
+    T.lamina(`<h3>Nova coisa</h3><p class="sub">escreve grande. o app quebra em pedaços de 2 a 5 min.</p>
+      <div class="busca"><input id="nt-nome" placeholder="ex: organizar as fotos da viagem"></div>
+      <div id="nt-frag"></div>
+      <div class="acoes"><button class="acao primaria" id="nt-ok">FRAGMENTAR E GUARDAR</button></div>`,
+      (el) => {
+        const inp = el.querySelector('#nt-nome');
+        setTimeout(() => inp.focus(), 250);
+        const atualiza = () => {
+          const q = inp.value.trim();
+          el.querySelector('#nt-frag').innerHTML = q
+            ? '<div class="secao">O app propõe</div>' + DB.FRAGMENTOS.slice(0, 3).map((f) =>
+                `<div class="acao" style="margin-bottom:8px">${esc(f.m.replace('%s', q))}
+                 <span style="color:var(--texto3);font-size:12px"> · ${f.min} min</span></div>`).join('')
+            : '';
+        };
+        inp.addEventListener('input', atualiza);
+      });
+  }
+
+  function abrirEpitetos(slot) {
+    const st = A.stats();
+    const disp = DB.EPITETOS.filter((e) => { try { return e.req(st); } catch (x) { return false; } }).slice(0, 4);
+    T.lamina(`<h3>Epítetos</h3><p class="sub">um título muda como o app fala com você.</p>
+      <div class="acoes">
+        ${disp.length ? disp.map((e) => `<button class="acao" data-eq="${slot}:${e.id}">
+            <b>${esc(e.nome)}</b><br><span style="font-size:12px;color:var(--texto2)">${esc(e.d)}</span></button>`).join('')
+          : '<div class="acao" style="color:var(--texto3)">nenhum ainda. eles aparecem sozinhos.</div>'}
+        ${A.s.epitetos[slot] ? `<button class="acao" data-eq="${slot}:">deixar vazio</button>` : ''}
+      </div>`);
+  }
+
+  function abrirSistema() {
+    const s = A.s;
+    T.lamina(`<h3>Sistema</h3><p class="sub">Camada ${A.camada()} · ${A.ambar()}${G} fixados no Âmbar · ${A.seiva()}${G} disponíveis</p>
+      <div class="acoes">
+        <button class="acao" data-cfg="tema">tema · <b>${s.prefs.tema === 'claro' ? 'papel' : 'sombra'}</b></button>
+        <button class="acao" data-cfg="som">som · <b>${s.prefs.som ? 'ligado' : 'desligado'}</b></button>
+        <button class="acao" data-cfg="haptic">vibração · <b>${s.prefs.haptic ? 'ligada' : 'desligada'}</b></button>
+        <button class="acao" data-cfg="silhueta">recalcular Silhueta agora</button>
+        <button class="acao" data-cfg="zerar" style="color:#C97B7B">apagar tudo e começar de novo</button>
+      </div>
+      <p style="color:var(--texto3);font-size:11.5px;margin-top:12px">
+        Âmbar é um registro append-only: nenhuma função deste app remove Seiva já ganha.</p>`);
+  }
+
+  /* ─── eventos (delegação única) ───────────────────────────────────────── */
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-t],[data-esc],[data-ciclo],[data-novo-ciclo],[data-nova-tarefa],'
+      + '[data-filtro],[data-rar],[data-no],[data-add],[data-manual],[data-avancar],[data-folha],'
+      + '[data-enx],[data-abrir-inc],[data-alimentar],[data-estado],[data-epiteto],[data-eq],'
+      + '[data-sel],[data-ncr],[data-ncd],[data-cfg],[data-fechar],#btn-feito,#btn-selar,#btn-poda,'
+      + '#sel-sair,#nc-ok,#nt-ok,#lampo,#celebra,#btn-voz');
+    if (!t) return;
+    const d = t.dataset || {};
+
+    if (t.id === 'celebra' || t.closest('#celebra')) { UI.fecharCelebra(); return; }
+    if (t.id === 'lampo') { atenderLampo(); return; }
+    if (d.t) { ir(d.t); return; }
+
+    if (t.id === 'btn-feito') { feito(t); return; }
+    if (d.esc === 'outro' || d.esc === 'depois') {
+      const b = $('#tela-hoje')._broto;
+      A.s.adiados[b.id] = Date.now() + (d.esc === 'depois' ? 2 * 36e5 : 3 * 6e4);
+      A.salvar(); UI.haptic(10); T.hoje();
+      UI.torrada(d.esc === 'depois' ? 'guardado por 2 horas. sem cobrança.' : 'outra coisa então.', 2200);
+      return;
+    }
+    if (d.ciclo) {
+      const c = A.s.ciclos.find((x) => x.id === d.ciclo);
+      if (!c || c.ultimo === A.dia()) { UI.torrada('esse já está feito hoje.'); return; }
+      const camadaAntes = A.camada();
+      premiar(t, A.marcarCiclo(c), { camadaAntes });
+      T.hoje();
+      return;
+    }
+    if (d.novoCiclo) { abrirNovoCiclo(); return; }
+    if (d.novaTarefa) { abrirNovaTarefa(); return; }
+    if (t.id === 'btn-selar') { abrirSelagem(); return; }
+    if (d.sel !== undefined) { t.closest('.lamina').remove(); comecarSelagem(Number(d.sel)); return; }
+    if (t.id === 'sel-sair') { encerrarSelagem(); return; }
+
+    if (d.filtro) { T.filtro = d.filtro; T.herbario(); return; }
+    if (d.rar) { T.filtroR = d.rar; T.estrato(); return; }
+
+    if (d.no) {
+      const [ramo, i] = d.no.split(':');
+      const n = A.nosDisponiveis(ramo).find((x) => x.i === Number(i));
+      if (!n) return;
+      if (A.seiva() < n.custo) { UI.torrada('faltam ' + (n.custo - A.seiva()) + ' de Seiva. nada foi perdido, só ainda não chegou.'); return; }
+      A.comprarNo(n);
+      UI.ganho(t, '−' + n.custo); UI.som(330, .5, 'triangle', .18); UI.haptic([0, 20, 40, 30]);
+      UI.torrada('nó aberto: ' + n.n);
+      const sil = A.s.silhueta && A.s.silhueta.nome;
+      A.calcularSilhueta(true);
+      if (A.s.silhueta && A.s.silhueta.nome !== sil) {
+        UI.celebrar({ num: '', titulo: A.s.silhueta.nome, texto: 'sua copa tomou forma. ' + A.s.silhueta.b });
+      }
+      T.arvore(); topo();
+      return;
+    }
+
+    if (d.add) {
+      const pares = $('#resultados')._pares || [];
+      const par = pares.find(([c]) => c.t === d.add);
+      const c = par ? par[0] : DB.CATALOGO.find((x) => x.t === d.add);
+      if (c) adicionarFolha(c, par ? par[1] : 'catálogo local');
+      return;
+    }
+    if (d.manual) { adicionarFolha({ t: d.manual, k: 'livro', total: 200, tags: [] }, 'manual'); return; }
+    if (d.avancar) {
+      const f = A.s.folhas.find((x) => x.id === d.avancar);
+      const camadaAntes = A.camada();
+      const r = A.avancarFolha(f, 1);
+      premiar(t, r, { camadaAntes });
+      if (r.prensou) UI.torrada('❧ ' + f.t + ' prensado. procure um Enxerto.');
+      const lam = t.closest('.lamina'); if (lam) lam.remove();
+      T.herbario();
+      return;
+    }
+    if (d.folha) { abrirFolha(d.folha); return; }
+    if (d.estado) {
+      const [est, id] = d.estado.split(':');
+      const f = A.s.folhas.find((x) => x.id === id);
+      const camadaAntes = A.camada();
+      premiar(t, A.prensarFolha(f, est), { camadaAntes });
+      t.closest('.lamina').remove();
+      T.herbario();
+      return;
+    }
+    if (d.enx) {
+      const e = $('#tela-herbario')._enx[Number(d.enx)];
+      const camadaAntes = A.camada();
+      const r = A.enxertar(e);
+      premiar(t, r, { camadaAntes });
+      UI.celebrar({ num: '✛', titulo: e.nome, texto: e.txt });
+      T.herbario();
+      return;
+    }
+
+    if (d.abrirInc) { T.abrirInclusao(d.abrirInc); return; }
+    if (d.alimentar) {
+      const def = DB.INCLUSOES.find((i) => i.id === d.alimentar);
+      const st = A.s.inclusoes[d.alimentar];
+      const custo = A.CUSTO_ALIM[st.estagio];
+      if (!A.alimentar(d.alimentar)) { UI.torrada('faltam ' + (custo - A.seiva()) + ' de Seiva.'); return; }
+      t.closest('.lamina').remove();
+      UI.somDe(def.id);
+      UI.celebrar({ num: '', titulo: def.nome + (A.s.inclusoes[def.id].estagio === 2 ? ' · plena' : ' · desperta'),
+        texto: A.s.inclusoes[def.id].estagio === 2 ? 'agora ela tem luz própria.' : 'a resina clareou. ela se moveu.' });
+      T.estufa(); topo();
+      return;
+    }
+
+    if (d.epiteto !== undefined) { abrirEpitetos(Number(d.epiteto)); return; }
+    if (d.eq !== undefined) {
+      const [slot, id] = d.eq.split(':');
+      A.s.epitetos[Number(slot)] = id || null;
+      A.salvar(); t.closest('.lamina').remove(); T.estrato();
+      UI.torrada(id ? 'epíteto equipado.' : 'slot livre.');
+      return;
+    }
+    if (t.id === 'btn-poda') {
+      T.lamina(`<h3>Poda</h3><p class="sub">reformata a especialização. a sua Camada permanece.</p>
+        <div class="acoes">
+          <button class="acao">reseta: nós dos Ramos e saldo de Seiva</button>
+          <button class="acao">preserva: <b>Âmbar, Camada</b>, Fósseis, Inclusões, Herbário, Enxertos</button>
+          <button class="acao primaria" data-cfg="podar">✂ PODAR · +8% de Seiva permanente</button>
+        </div>`);
+      return;
+    }
+    if (d.fechar) { t.closest('.lamina').remove(); return; }
+
+    if (t.id === 'nc-ok') {
+      const el = t.closest('.lamina');
+      const nome = el.querySelector('#nc-nome').value.trim();
+      if (!nome) { UI.torrada('só o nome, e está feito.'); return; }
+      const ramo = el.querySelector('#nc-ramos [aria-pressed="true"]').dataset.ncr;
+      const dif = Number(el.querySelector('#nc-dif [aria-pressed="true"]').dataset.ncd);
+      const r = DB.RAMOS.find((x) => x.id === ramo);
+      A.s.ciclos.push({ id: 'c' + Date.now(), nome, ramo, dif, glifo: r.glifo, ultimo: null });
+      A.salvar(); el.remove(); ir('hoje'); UI.torrada('Ciclo criado. aparece amanhã também.');
+      return;
+    }
+    if (d.ncr || d.ncd) {
+      const grupo = t.parentElement;
+      Array.from(grupo.children).forEach((c) => c.setAttribute('aria-pressed', String(c === t)));
+      return;
+    }
+    if (t.id === 'nt-ok') {
+      const el = t.closest('.lamina');
+      const q = el.querySelector('#nt-nome').value.trim();
+      if (!q) { UI.torrada('escreve qualquer coisa. o app quebra.'); return; }
+      DB.FRAGMENTOS.slice(0, 3).forEach((f, i) => A.s.brotos.push({
+        id: 'b' + Date.now() + i, txt: f.m.replace('%s', q), min: f.min, ramo: 'oficio', dif: 1, base: 10 }));
+      A.salvar(); el.remove(); ir('hoje');
+      UI.torrada('quebrado em 3 pedaços. o primeiro já está na tela.');
+      return;
+    }
+
+    if (d.cfg) {
+      const s = A.s;
+      if (d.cfg === 'tema') { s.prefs.tema = s.prefs.tema === 'claro' ? 'escuro' : 'claro'; document.documentElement.dataset.tema = s.prefs.tema; }
+      if (d.cfg === 'som') s.prefs.som = !s.prefs.som;
+      if (d.cfg === 'haptic') s.prefs.haptic = !s.prefs.haptic;
+      if (d.cfg === 'silhueta') { A.calcularSilhueta(true); UI.torrada(s.silhueta ? 'silhueta: ' + s.silhueta.nome : 'ainda em Bruma.'); }
+      if (d.cfg === 'podar') { if (A.podar()) UI.celebrar({ num: '✂', titulo: 'Anel de Cerne', texto: 'a árvore foi podada. o estrato permanece.' }); }
+      if (d.cfg === 'zerar') { A.zerar(); location.reload(); return; }
+      A.salvar(); t.closest('.lamina').remove(); pintar();
+      return;
+    }
+
+    if (t.id === 'btn-voz') { ditar(t); return; }
+  });
+
+  document.addEventListener('input', (ev) => {
+    if (ev.target.id === 'busca') buscar(ev.target.value.trim());
+  });
+
+  /* toque longo no topo abre o Sistema */
+  let pressT = null;
+  $('.topo').addEventListener('pointerdown', () => { pressT = setTimeout(abrirSistema, 550); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((e) =>
+    $('.topo').addEventListener(e, () => clearTimeout(pressT)));
+
+  /* ─── voz ─────────────────────────────────────────────────────────────── */
+  function ditar(btn) {
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) { UI.torrada('este navegador não escuta. digite o nome.'); $('#busca').focus(); return; }
+    const rec = new R(); rec.lang = 'pt-BR'; rec.interimResults = false;
+    btn.classList.add('ouvindo');
+    rec.onresult = (e) => { const q = e.results[0][0].transcript; $('#busca').value = q; buscar(q); };
+    rec.onerror = () => UI.torrada('não deu. digite o nome.');
+    rec.onend = () => btn.classList.remove('ouvindo');
+    try { rec.start(); } catch (e) { btn.classList.remove('ouvindo'); }
+  }
+
+  /* ─── interrupções da Selagem ─────────────────────────────────────────── */
+  document.addEventListener('visibilitychange', () => {
+    if (sel.on && document.hidden) { sel.interrup++; tickSelagem(); }
+  });
+  window.addEventListener('blur', () => { if (sel.on) { sel.interrup++; tickSelagem(); } });
+  window.addEventListener('resize', () => { if (telaAtual === 'arvore') T.desenharArvore(); });
+
+  /* ─── primeira execução: importação de exemplo ────────────────────────── */
+  function semear() {
+    const s = A.s;
+    if (s.folhas.length || s.ledger.length) return;
+    const pega = (t) => DB.CATALOGO.find((c) => c.t === t);
+    const add = (t, estado, prog) => {
+      const c = pega(t); if (!c) return;
+      s.folhas.push({ id: 'f' + t.length + s.folhas.length, t: c.t, k: c.k, total: c.total,
+        prog: prog || 0, estado, tags: c.tags, nota: c.nota, fonte: 'importado', importada: true });
+    };
+    add('Vinland Saga', 'curso', 84);
+    add('Elden Ring', 'curso', 41);
+    add('Musashi', 'prensado', 970);
+    add('Ghost of Tsushima', 'prensado', 45);
+    add('Mushishi', 'semeado', 0);
+    add('Meditações', 'curso', 60);
+    A.revisar(); A.salvar();
+  }
+
+  /* ─── boot ────────────────────────────────────────────────────────────── */
+  A.carregar();
+  semear();
+  $$('[data-ico]').forEach((e) => { e.innerHTML = UI.ICO[e.dataset.ico] || ''; });
+  document.documentElement.dataset.tema = A.s.prefs.tema || 'escuro';
+  document.documentElement.style.setProperty('--estacao', A.estacao().acento);
+  if (A.s.prefs.acento && A.s.prefs.acentoAte > Date.now()) {   /* sopro de cor do Pirilampo */
+    document.documentElement.style.setProperty('--acento', `hsl(${A.s.prefs.acento} 62% 56%)`);
+  }
+  if (A.s.congelado) document.body.classList.add('turvo');
+
+  /* volta depois de 7+ dias: a Estufa primeiro, o trabalho depois */
+  const pausa = A.s.pausaAtual || 0;
+  ir(pausa >= 7 ? 'estufa' : 'hoje');
+  if (pausa >= 7) UI.torrada('você voltou. a poeira já se limpou sozinha.', 5000);
+  else if (A.s.congelado) UI.torrada('sua corrente está congelada, não perdida. ela retoma de onde parou.', 5000);
+
+  setInterval(talvezLampo, 60000);
+  setTimeout(talvezLampo, 25000);
+  window.addEventListener('beforeunload', A.salvar);
+})();
+
+</script>
+</body>
+</html>

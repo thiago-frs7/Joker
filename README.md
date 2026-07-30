@@ -29,6 +29,17 @@ Quando endurece, vira **Âmbar**: permanente, incorruptível, com coisas vivas p
 
 ---
 
+## O app
+
+Existe e roda. Local-first, offline, sem build, sem dependências.
+
+```bash
+open app/index.html                              # ou
+cd app && node build.js && open dist/ambar.html  # arquivo único, 133 KB
+```
+
+Detalhes em [`app/README.md`](app/README.md) — inclusive o que ainda **não** está implementado.
+
 ## Documentos
 
 | # | Entregável | Arquivo |
