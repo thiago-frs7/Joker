@@ -494,17 +494,21 @@ export function DetalheMissao({
   )
 }
 
-/** Ordem da lista: sem punição. Atrasadas não sobem, não piscam, não cobram. */
+/**
+ * Ordem da lista: sem punição. O que venceu **não sobe para o topo** — o prazo
+ * vencido é tratado como se fosse hoje, então a missão atrasada senta ao lado
+ * das de hoje em vez de encabeçar a lista cobrando atenção. Não pisca, não fica
+ * vermelha, não muda de tamanho.
+ */
 export function useMissoesAbertas() {
-  const missoes = useLiveQuery(
-    () => db.missoes.filter((m) => !m.concluidaEm).toArray(),
-    [],
-  )
+  const missoes = useLiveQuery(() => db.missoes.filter((m) => !m.concluidaEm).toArray(), [])
   return useMemo(() => {
     const lista = missoes ?? []
+    const chave = (m: Missao) =>
+      m.prazo === undefined ? Number.MAX_SAFE_INTEGER : Math.max(m.prazo, hoje())
     return [...lista].sort((a, b) => {
-      const pa = a.prazo ?? Number.MAX_SAFE_INTEGER
-      const pb = b.prazo ?? Number.MAX_SAFE_INTEGER
+      const pa = chave(a)
+      const pb = chave(b)
       if (pa !== pb) return pa - pb
       return b.tocadaEm - a.tocadaEm
     })

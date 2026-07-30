@@ -30,7 +30,8 @@ export function Capa({ obra, className = '' }: { obra: Obra; className?: string 
         <span className="absolute -bottom-3 -right-2 text-[3.4rem] leading-none text-pedra-viva">
           {TIPO_OBRA[obra.tipo].glifo}
         </span>
-        <span className="absolute inset-x-2 top-2.5 line-clamp-4 text-left font-[family-name:var(--font-display)] text-[0.72rem] font-semibold leading-tight text-fraco">
+        {/* começa abaixo da faixa de estado, que mora no topo à esquerda */}
+        <span className="absolute inset-x-2 top-9 line-clamp-4 text-left font-[family-name:var(--font-display)] text-[0.72rem] font-semibold leading-tight text-fraco">
           {obra.titulo}
         </span>
       </div>
